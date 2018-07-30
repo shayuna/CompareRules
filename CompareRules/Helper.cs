@@ -6,13 +6,17 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using System.Text.RegularExpressions;
 
-enum ComparisonResults
-{
-    DIFFERENT,IDENTICAL,SIMILAR
-}
-
 namespace CompareRules
 {
+    enum ComparisonResults
+    {
+        DIFFERENT, IDENTICAL, SIMILAR
+    }
+    enum Turn
+    {
+        A, B
+    }
+
     static class Helper
     {
         public static ICollection<HtmlNode> GetAllHtmlClausesInFileLoadedFromWeb(string sUrl)
@@ -30,12 +34,81 @@ namespace CompareRules
             foreach (HtmlNode eNode in arNodes)
             {
                 iPosition++;
-                arComparableItems.Add(new ComparableItem(rec.ID, iPosition, null, RelationType.NONE, eNode));
+                arComparableItems.Add(new ComparableItem(rec.ID, iPosition, eNode));
             }
             return arComparableItems;
         }
         public static void CompareComparableItemsStores(ref IList<ComparableItem> arComparableItemsA, ref IList<ComparableItem> arComparableItemsB)
         {
+            int iIndexInA = 0, iIndexInB = 0, iIncrementA = 0, iIncrementB = 0;
+            Turn eTurn=Turn.A;
+
+            bool bContinue = true;
+
+            while (bContinue)
+            {
+                ComparisonResults eRslt;
+                if (eTurn==Turn.A) eRslt = Helper.CompareTwoHtmlElements(arComparableItemsA[iIndexInA].Node, arComparableItemsB[iIndexInB + iIncrementB].Node);
+                else eRslt = Helper.CompareTwoHtmlElements(arComparableItemsA[iIndexInA + iIncrementA].Node, arComparableItemsB[iIndexInB].Node);
+                if (eRslt == ComparisonResults.IDENTICAL || eRslt == ComparisonResults.SIMILAR)
+                {
+                    if (eTurn == Turn.A)
+                    {
+                        if (eRslt == ComparisonResults.IDENTICAL) arComparableItemsB[iIndexInB + iIncrementB].AncestorRelationType = RelationType.IDENTICAL;
+                        else arComparableItemsB[iIndexInB + iIncrementB].AncestorRelationType = RelationType.SIMILAR;
+                        for (int ii = 0;ii< iIncrementB; ii++)
+                        {
+                            arComparableItemsB[iIndexInB + ii].AncestorRelationType = RelationType.ABSENT;
+                            arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB + ii]);
+                        }
+                        arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB + iIncrementB]);
+                    }
+                    else
+                    {
+                        if (eRslt == ComparisonResults.IDENTICAL) arComparableItemsB[iIndexInB].AncestorRelationType = RelationType.IDENTICAL;
+                        else arComparableItemsB[iIndexInB].AncestorRelationType = RelationType.SIMILAR;
+/* we don't need to relate to to elements in b. if the descendants array is empty, it means that it isn't found in the previous version. plus, another problem: we can't tag one ComparabaleItem object with two AncestorRelationType tags. (here we should use both COME_AFTER and SIMILAR/IDENTICAL*/
+/*
+                        for (int ii = 0; ii < iIncrementA; ii++)
+                        {
+                            arComparableItemsA[iIndexInA + ii].addDescendant(arComparableItemsB[iIndexInB]);
+                        }
+                        arComparableItemsB[iIndexInB].AncestorRelationType = RelationType.COMES_AFTER;
+*/
+                        arComparableItemsA[iIndexInA + iIncrementA].addDescendant(arComparableItemsB[iIndexInB]);
+                    }
+                    if (iIncrementA == 0 && iIncrementB == 0)
+                    {
+                        iIndexInA++;
+                        iIndexInB++;
+                    }
+                    else if (eTurn == Turn.A)
+                    {
+                        iIndexInA++;
+                        iIndexInB += iIncrementB + 1;
+                    }
+                    else
+                    {
+                        iIndexInA+= iIncrementA + 1;
+                        iIndexInB++;
+                    }
+                    iIncrementA = 0;
+                    iIncrementB = 0;
+                }
+                else
+                {
+                    if (eTurn == Turn.A)
+                    {
+                        iIncrementA++;
+                        eTurn = Turn.B;
+                    }
+                    else
+                    {
+                        iIncrementB++;
+                        eTurn = Turn.A;
+                    }
+                }
+            }
         }
         public static ComparisonResults CompareTwoHtmlElements(HtmlNode eNodeA,HtmlNode eNodeB)
         {
@@ -67,9 +140,9 @@ namespace CompareRules
                 }
             }
             if (Regex.Replace(eNodeA.InnerText, @"[\s\r\n\t.,;:]+", "") == Regex.Replace(eNodeB.InnerText, @"[\s\r\n\t.,;:]+", "")) rslt = ComparisonResults.IDENTICAL;
-            else if (((iWordsFrom2In1 / arWordsA.Length >= 0.6) && arWordsA.Length >= 10 && arWordsA.Length * 2.5 > arWordsB.Length) ||
-                    ((iWordsFrom1In2 / arWordsB.Length >= 0.6) && arWordsB.Length >= 10 && arWordsB.Length * 2.5 > arWordsA.Length) ||
-                    (eNodeA.QuerySelector(".hkoteretseifin") != null && eNodeB.QuerySelector(".hkoteretseifin") != null && iWordsFrom1In2 / arWordsB.Length >= 0.5 && iWordsFrom2In1 / arWordsA.Length >= 0.5))
+            else if ((((double)iWordsFrom2In1 / arWordsA.Length >= 0.6) && arWordsA.Length >= 10 && arWordsA.Length * 2.5 > arWordsB.Length) ||
+                    (((double)iWordsFrom1In2 / arWordsB.Length >= 0.6) && arWordsB.Length >= 10 && arWordsB.Length * 2.5 > arWordsA.Length) ||
+                    (eNodeA.QuerySelector(".hkoteretseifin") != null && eNodeB.QuerySelector(".hkoteretseifin") != null && (double)iWordsFrom1In2 / arWordsB.Length >= 0.5 && (double)iWordsFrom2In1 / arWordsA.Length >= 0.5))
                 rslt = ComparisonResults.SIMILAR;
 
             return rslt;

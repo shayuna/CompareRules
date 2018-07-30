@@ -5,25 +5,22 @@ using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 
-enum RelationType
-{
-    NONE,IDENTICAL,SIMILAR,COMES_AFTER,ABSENT
-}
-
 namespace CompareRules
 {
+    enum RelationType
+    {
+        NONE, IDENTICAL, SIMILAR, COMES_AFTER, ABSENT
+    }
     class ComparableItem
     {
         private int iHokVersionID, iPosition;
-        private ComparableItem[] oDescendants;
-        RelationType eAncestorRelationType;
+        private IList<ComparableItem> lDescendants = new List<ComparableItem>();
+        RelationType eAncestorRelationType=RelationType.NONE;
         HtmlNode eNode;
-        public ComparableItem(int iHokVersionID, int iPosition, ComparableItem[] oDescendants, RelationType eAncestorRelationType, HtmlNode eNode)
+        public ComparableItem(int iHokVersionID, int iPosition, HtmlNode eNode)
         {
             this.iHokVersionID = iHokVersionID;
             this.iPosition = iPosition;
-            this.oDescendants= oDescendants;
-            this.eAncestorRelationType = eAncestorRelationType;
             this.eNode = eNode;
         }
 
@@ -43,11 +40,17 @@ namespace CompareRules
             }
         }
 
-        public ComparableItem[] Descendants
+        public bool addDescendant(ComparableItem oDescendant)
+        {
+            lDescendants.Add(oDescendant);
+            return true;
+        }
+
+        public IList<ComparableItem> Descendants
         {
             get
             {
-                return oDescendants;
+                return lDescendants;
             }
         }
 
@@ -56,6 +59,10 @@ namespace CompareRules
             get
             {
                 return eAncestorRelationType;
+            }
+            set
+            {
+                eAncestorRelationType=value;
             }
         }
 
