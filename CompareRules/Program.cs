@@ -64,7 +64,7 @@ namespace CompareRules
                         {
                             IList<ComparableItem> arComparableItemsA = Helper.FromHtmlNodesArrayToComparableItemsList(arNodesA, recA);
                             IList<ComparableItem> arComparableItemsB = Helper.FromHtmlNodesArrayToComparableItemsList(arNodesB, recB);
-                            Helper.CompareComparableItemsArrays(ref arComparableItemsA, ref arComparableItemsB);
+                            Helper.CompareComparableItemsStores(ref arComparableItemsA, ref arComparableItemsB);
                             Console.WriteLine("comparing rules");
                         }
                     }
