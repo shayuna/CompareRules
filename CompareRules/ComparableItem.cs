@@ -15,15 +15,15 @@ namespace CompareRules
     class ComparableItem
     {
         private int iHokVersionID, iPosition;
-        private ComparableItemID oRelatedTo;
-        RelationType eRelationType;
+        private ComparableItem[] oDescendants;
+        RelationType eAncestorRelationType;
         HtmlNode eNode;
-        public ComparableItem(int iHokVersionID, int iPosition, ComparableItemID oRelatedTo, RelationType eRelationType, HtmlNode eNode)
+        public ComparableItem(int iHokVersionID, int iPosition, ComparableItem[] oDescendants, RelationType eAncestorRelationType, HtmlNode eNode)
         {
             this.iHokVersionID = iHokVersionID;
             this.iPosition = iPosition;
-            this.oRelatedTo = oRelatedTo;
-            this.eRelationType = eRelationType;
+            this.oDescendants= oDescendants;
+            this.eAncestorRelationType = eAncestorRelationType;
             this.eNode = eNode;
         }
 
@@ -43,19 +43,19 @@ namespace CompareRules
             }
         }
 
-        public ComparableItemID RelatedTo
+        public ComparableItem[] Descendants
         {
             get
             {
-                return oRelatedTo;
+                return oDescendants;
             }
         }
 
-        public RelationType RelationType
+        public RelationType AncestorRelationType
         {
             get
             {
-                return eRelationType;
+                return eAncestorRelationType;
             }
         }
 
