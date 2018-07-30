@@ -1,0 +1,12 @@
+C:\Users\shay\lawdata_exe\CompareRules\CompareRules\bin\Debug\CompareRules.exe.config
+C:\Users\shay\lawdata_exe\CompareRules\CompareRules\bin\Debug\CompareRules.exe
+C:\Users\shay\lawdata_exe\CompareRules\CompareRules\bin\Debug\CompareRules.pdb
+C:\Users\shay\lawdata_exe\CompareRules\CompareRules\obj\Debug\CompareRules.csprojAssemblyReference.cache
+C:\Users\shay\lawdata_exe\CompareRules\CompareRules\obj\Debug\CompareRules.csproj.CoreCompileInputs.cache
+C:\Users\shay\lawdata_exe\CompareRules\CompareRules\obj\Debug\CompareRules.exe
+C:\Users\shay\lawdata_exe\CompareRules\CompareRules\obj\Debug\CompareRules.pdb
+C:\Users\shay\lawdata_exe\CompareRules\CompareRules\bin\Debug\HtmlAgilityPack.CssSelectors.dll
+C:\Users\shay\lawdata_exe\CompareRules\CompareRules\bin\Debug\HtmlAgilityPack.dll
+C:\Users\shay\lawdata_exe\CompareRules\CompareRules\bin\Debug\HtmlAgilityPack.xml
+C:\Users\shay\lawdata_exe\CompareRules\CompareRules\bin\Debug\HtmlAgilityPack.CssSelectors.pdb
+C:\Users\shay\lawdata_exe\CompareRules\CompareRules\obj\Debug\CompareRules.csproj.CopyComplete
