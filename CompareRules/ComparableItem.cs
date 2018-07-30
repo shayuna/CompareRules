@@ -7,21 +7,22 @@ using HtmlAgilityPack;
 
 enum RelationType
 {
-    NONE,IDENTICAL,SIMILAR,ABSENT,PRESENT
+    NONE,IDENTICAL,SIMILAR,COMES_AFTER,ABSENT
 }
 
 namespace CompareRules
 {
     class ComparableItem
     {
-        private int iHokVersionID, iPosition, iRelatedTo;
+        private int iHokVersionID, iPosition;
+        private ComparableItemID oRelatedTo;
         RelationType eRelationType;
         HtmlNode eNode;
-        public ComparableItem(int iHokVersionID, int iPosition, int iRelatedTo, RelationType eRelationType, HtmlNode eNode)
+        public ComparableItem(int iHokVersionID, int iPosition, ComparableItemID oRelatedTo, RelationType eRelationType, HtmlNode eNode)
         {
             this.iHokVersionID = iHokVersionID;
             this.iPosition = iPosition;
-            this.iRelatedTo = iRelatedTo;
+            this.oRelatedTo = oRelatedTo;
             this.eRelationType = eRelationType;
             this.eNode = eNode;
         }
@@ -42,11 +43,11 @@ namespace CompareRules
             }
         }
 
-        public int RelatedTo
+        public ComparableItemID RelatedTo
         {
             get
             {
-                return iRelatedTo;
+                return oRelatedTo;
             }
         }
 

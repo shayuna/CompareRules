@@ -15,7 +15,7 @@ namespace CompareRules
             //making the db contact. cross your fingers you mf.
             string sDataSrc = "192.168.200.4";
             string sConnStr = "Initial Catalog=LawData;User ID=sa;Password=;Data Source=" + sDataSrc;
-            string sSql = "select c,hokc from hok_previousversions (nolock) order by hokc,c";
+            string sSql = "select c,hokc from hok_previousversions (nolock) order by hokc,c desc";
             int iCounter = 0;
             SqlConnection conn = new SqlConnection(sConnStr);
             try
@@ -49,12 +49,9 @@ namespace CompareRules
 
                     if (recA!=null && recB!=null)
                     {
-                        string sUrlA = "http://www.lawdata.co.il/lawdata_face_lift_test/gethok.asp?flnm="+recA.HokC+"_"+recA.ID;
-                        ICollection<HtmlNode> arNodesA = Helper.GetAllHtmlClausesInFileLoadedFromWeb(sUrlA);
-
-                        string sUrlB = "http://www.lawdata.co.il/lawdata_face_lift_test/gethok.asp?flnm=" + recB.HokC + "_" + recB.ID;
-                        ICollection<HtmlNode> arNodesB = Helper.GetAllHtmlClausesInFileLoadedFromWeb(sUrlB);
-                        if (arNodesA.Count== 0)
+                        ICollection<HtmlNode> arNodesA = Helper.GetAllHtmlClausesInFileLoadedFromWeb("http://www.lawdata.co.il/lawdata_face_lift_test/gethok.asp?flnm=" + recA.HokC + "_" + recA.ID);
+                        ICollection<HtmlNode> arNodesB = Helper.GetAllHtmlClausesInFileLoadedFromWeb("http://www.lawdata.co.il/lawdata_face_lift_test/gethok.asp?flnm=" + recB.HokC + "_" + recB.ID);
+                        if (arNodesA.Count == 0)
                         {
                             recA = recB;
                             recB = null;
@@ -65,14 +62,9 @@ namespace CompareRules
                         }
                         else
                         {
-                            ICollection<ComparableItem> arComparableItemsA = new List<ComparableItem>();
-                            int iCnt = 0;
-                            foreach(HtmlNode eNode in arNodesA)
-                            {
-                                iCnt++;
-                                // #shay - stopped here. shou
-                                arComparableItemsA.Add (new ComparableItem(recA.ID, iCnt, -1, RelationType.NONE, eNode));
-                            }
+                            IList<ComparableItem> arComparableItemsA = Helper.FromHtmlNodesArrayToComparableItemsList(arNodesA, recA);
+                            IList<ComparableItem> arComparableItemsB = Helper.FromHtmlNodesArrayToComparableItemsList(arNodesB, recB);
+                            Helper.CompareComparableItemsArrays(ref arComparableItemsA, ref arComparableItemsB);
                             Console.WriteLine("comparing rules");
                         }
                     }
@@ -85,13 +77,6 @@ namespace CompareRules
             {
                 Console.WriteLine("can't open connection to db. error is " + ex.Message); 
             }
-
-/*
-            foreach (HtmlNode oNode in arNodes)
-            {
-//                Console.WriteLine(oNode.InnerText);
-            }
-            */
             Console.ReadKey();
         }
     }
