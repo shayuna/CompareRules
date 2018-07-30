@@ -5,13 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using System.Text.RegularExpressions;
+using CompareRules;
 
 namespace CompareRules
 {
-    enum ComparisonResults
-    {
-        DIFFERENT, IDENTICAL, SIMILAR
-    }
     enum Turn
     {
         A, B
@@ -47,14 +44,14 @@ namespace CompareRules
 
             while (bContinue)
             {
-                ComparisonResults eRslt;
+                RelationType eRslt;
                 if (eTurn==Turn.A) eRslt = Helper.CompareTwoHtmlElements(arComparableItemsA[iIndexInA].Node, arComparableItemsB[iIndexInB + iIncrementB].Node);
                 else eRslt = Helper.CompareTwoHtmlElements(arComparableItemsA[iIndexInA + iIncrementA].Node, arComparableItemsB[iIndexInB].Node);
-                if (eRslt == ComparisonResults.IDENTICAL || eRslt == ComparisonResults.SIMILAR)
+                if (eRslt == RelationType.IDENTICAL || eRslt == RelationType.SIMILAR)
                 {
                     if (eTurn == Turn.A)
                     {
-                        if (eRslt == ComparisonResults.IDENTICAL) arComparableItemsB[iIndexInB + iIncrementB].AncestorRelationType = RelationType.IDENTICAL;
+                        if (eRslt == RelationType.IDENTICAL) arComparableItemsB[iIndexInB + iIncrementB].AncestorRelationType = RelationType.IDENTICAL;
                         else arComparableItemsB[iIndexInB + iIncrementB].AncestorRelationType = RelationType.SIMILAR;
                         for (int ii = 0;ii< iIncrementB; ii++)
                         {
@@ -65,7 +62,7 @@ namespace CompareRules
                     }
                     else
                     {
-                        if (eRslt == ComparisonResults.IDENTICAL) arComparableItemsB[iIndexInB].AncestorRelationType = RelationType.IDENTICAL;
+                        if (eRslt == RelationType.IDENTICAL) arComparableItemsB[iIndexInB].AncestorRelationType = RelationType.IDENTICAL;
                         else arComparableItemsB[iIndexInB].AncestorRelationType = RelationType.SIMILAR;
 /* we don't need to relate to to elements in b. if the descendants array is empty, it means that it isn't found in the previous version. plus, another problem: we can't tag one ComparabaleItem object with two AncestorRelationType tags. (here we should use both COME_AFTER and SIMILAR/IDENTICAL*/
 /*
@@ -110,11 +107,11 @@ namespace CompareRules
                 }
             }
         }
-        public static ComparisonResults CompareTwoHtmlElements(HtmlNode eNodeA,HtmlNode eNodeB)
+        public static RelationType CompareTwoHtmlElements(HtmlNode eNodeA,HtmlNode eNodeB)
         {
             string[] arWordsA = Helper.FromTxtToWords(eNodeA.InnerText);
             string[] arWordsB = Helper.FromTxtToWords(eNodeB.InnerText);
-            ComparisonResults rslt = ComparisonResults.DIFFERENT;
+            RelationType rslt = RelationType.DIFFERENT;
 
             int iWordsFrom2In1 = 0, iWordsFrom1In2 = 0;
             for (int jj = 0; jj < arWordsA.Length; jj++)
@@ -139,11 +136,11 @@ namespace CompareRules
                     }
                 }
             }
-            if (Regex.Replace(eNodeA.InnerText, @"[\s\r\n\t.,;:]+", "") == Regex.Replace(eNodeB.InnerText, @"[\s\r\n\t.,;:]+", "")) rslt = ComparisonResults.IDENTICAL;
+            if (Regex.Replace(eNodeA.InnerText, @"[\s\r\n\t.,;:]+", "") == Regex.Replace(eNodeB.InnerText, @"[\s\r\n\t.,;:]+", "")) rslt = RelationType.IDENTICAL;
             else if ((((double)iWordsFrom2In1 / arWordsA.Length >= 0.6) && arWordsA.Length >= 10 && arWordsA.Length * 2.5 > arWordsB.Length) ||
                     (((double)iWordsFrom1In2 / arWordsB.Length >= 0.6) && arWordsB.Length >= 10 && arWordsB.Length * 2.5 > arWordsA.Length) ||
                     (eNodeA.QuerySelector(".hkoteretseifin") != null && eNodeB.QuerySelector(".hkoteretseifin") != null && (double)iWordsFrom1In2 / arWordsB.Length >= 0.5 && (double)iWordsFrom2In1 / arWordsA.Length >= 0.5))
-                rslt = ComparisonResults.SIMILAR;
+                rslt = RelationType.SIMILAR;
 
             return rslt;
         }

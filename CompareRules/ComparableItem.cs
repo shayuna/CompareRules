@@ -9,13 +9,13 @@ namespace CompareRules
 {
     enum RelationType
     {
-        NONE, IDENTICAL, SIMILAR, COMES_AFTER, ABSENT
+        EMPTY, IDENTICAL, SIMILAR, DIFFERENT,COMES_AFTER, ABSENT
     }
     class ComparableItem
     {
         private int iHokVersionID, iPosition;
         private IList<ComparableItem> lDescendants = new List<ComparableItem>();
-        RelationType eAncestorRelationType=RelationType.NONE;
+        RelationType eAncestorRelationType=RelationType.EMPTY;
         HtmlNode eNode;
         public ComparableItem(int iHokVersionID, int iPosition, HtmlNode eNode)
         {
