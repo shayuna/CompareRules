@@ -52,8 +52,8 @@ namespace CompareRules
                     eRslt == RelationType.SIMILAR || 
                     iIncrementA>100 || 
                     iIncrementB>100 || 
-                    iIndexInA+iIncrementA>=arComparableItemsA.Count || 
-                    iIndexInB+iIncrementB>=arComparableItemsB.Count
+                    iIndexInA+iIncrementA+1>=arComparableItemsA.Count || 
+                    iIndexInB+iIncrementB+1>=arComparableItemsB.Count
                     )
                 {
                     if (eRslt==RelationType.DIFFERENT)
@@ -61,7 +61,7 @@ namespace CompareRules
                         if (
                             iIncrementA > 100 ||
                             iIncrementB > 100 ||
-                            iIndexInA + iIncrementA >= arComparableItemsA.Count
+                            iIndexInA + iIncrementA+1>= arComparableItemsA.Count
                         )
                         {
                             arComparableItemsB[iIndexInB].AncestorRelationType = RelationType.COMES_AFTER;
