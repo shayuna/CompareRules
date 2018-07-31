@@ -42,17 +42,37 @@ namespace CompareRules
 
             bool bContinue = true;
 
-            while (bContinue)
+            while (bContinue && iIndexInA<arComparableItemsA.Count && iIndexInB<arComparableItemsB.Count)
             {
                 RelationType eRslt;
                 if (eTurn==Turn.A) eRslt = Helper.CompareTwoHtmlElements(arComparableItemsA[iIndexInA].Node, arComparableItemsB[iIndexInB + iIncrementB].Node);
                 else eRslt = Helper.CompareTwoHtmlElements(arComparableItemsA[iIndexInA + iIncrementA].Node, arComparableItemsB[iIndexInB].Node);
-                if (eRslt == RelationType.IDENTICAL || eRslt == RelationType.SIMILAR)
+                if (
+                    eRslt == RelationType.IDENTICAL || 
+                    eRslt == RelationType.SIMILAR || 
+                    iIncrementA>100 || 
+                    iIncrementB>100 || 
+                    iIndexInA+iIncrementA>=arComparableItemsA.Count || 
+                    iIndexInB+iIncrementB>=arComparableItemsB.Count
+                    )
                 {
-                    if (eTurn == Turn.A)
+                    if (eRslt==RelationType.DIFFERENT)
                     {
-                        if (eRslt == RelationType.IDENTICAL) arComparableItemsB[iIndexInB + iIncrementB].AncestorRelationType = RelationType.IDENTICAL;
-                        else arComparableItemsB[iIndexInB + iIncrementB].AncestorRelationType = RelationType.SIMILAR;
+                        if (
+                            iIncrementA > 100 ||
+                            iIncrementB > 100 ||
+                            iIndexInA + iIncrementA >= arComparableItemsA.Count
+                        )
+                        {
+                            arComparableItemsB[iIndexInB].AncestorRelationType = RelationType.COMES_AFTER;
+                            arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB]);
+                        }
+                        iIncrementA = 0;
+                        iIncrementB = 0;
+                    }
+                    else if (eTurn == Turn.A)
+                    {
+                        arComparableItemsB[iIndexInB + iIncrementB].AncestorRelationType = eRslt;
                         for (int ii = 0;ii< iIncrementB; ii++)
                         {
                             arComparableItemsB[iIndexInB + ii].AncestorRelationType = RelationType.ABSENT;
@@ -62,8 +82,7 @@ namespace CompareRules
                     }
                     else
                     {
-                        if (eRslt == RelationType.IDENTICAL) arComparableItemsB[iIndexInB].AncestorRelationType = RelationType.IDENTICAL;
-                        else arComparableItemsB[iIndexInB].AncestorRelationType = RelationType.SIMILAR;
+                        arComparableItemsB[iIndexInB].AncestorRelationType = eRslt;
 /* we don't need to relate to to elements in b. if the descendants array is empty, it means that it isn't found in the previous version. plus, another problem: we can't tag one ComparabaleItem object with two AncestorRelationType tags. (here we should use both COME_AFTER and SIMILAR/IDENTICAL*/
 /*
                         for (int ii = 0; ii < iIncrementA; ii++)
