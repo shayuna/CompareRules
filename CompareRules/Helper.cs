@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using System.Text.RegularExpressions;
-using CompareRules;
 
 namespace CompareRules
 {
@@ -20,8 +19,8 @@ namespace CompareRules
         {
             HtmlWeb oHtmlWeb = new HtmlWeb();
             oHtmlWeb.OverrideEncoding = Encoding.GetEncoding(1255);
-            var doc = oHtmlWeb.Load(sUrl);
-            return doc.QuerySelectorAll(".hsubclausewrapper,.hkoteretseifin,.hearot");
+            HtmlDocument oDoc = oHtmlWeb.Load(sUrl);
+            return oDoc.QuerySelectorAll(".hsubclausewrapper,.hkoteretseifin,.hearot");
         }
         public static IList<ComparableItem> FromHtmlNodesArrayToComparableItemsList(ICollection<HtmlNode> arNodes, RecordDetails rec)
         {
