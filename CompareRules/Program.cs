@@ -34,12 +34,18 @@ namespace CompareRules
                         iCounter++;
                         recA = null;
                         recB = null;
+                        arComparableItemsA = null;
+                        arComparableItemsB = null;
                         if (iCounter == 100) break;
                     }
                     if (recA == null)
                     {
                         recA = new RecordDetails(Convert.ToInt32(dataReader.GetValue(0)), Convert.ToInt32(dataReader.GetValue(1)));
-                        if (oRule != null) arRules.Add(oRule);
+                        if (oRule != null)
+                        {
+                            oRule.Serialize();
+                            arRules.Add(oRule);
+                        }
                         oRule = new Rule(recA);
                     }
                     else if (recB == null)
@@ -54,31 +60,18 @@ namespace CompareRules
 
                     if (recA!=null && recB!=null)
                     {
-                        ICollection<HtmlNode> arNodesA = Helper.GetAllHtmlClausesInFileLoadedFromWeb("http://www.lawdata.co.il/lawdata_face_lift_test/gethok.asp?flnm=" + recA.HokC + "_" + recA.ID);
-                        ICollection<HtmlNode> arNodesB = Helper.GetAllHtmlClausesInFileLoadedFromWeb("http://www.lawdata.co.il/lawdata_face_lift_test/gethok.asp?flnm=" + recB.HokC + "_" + recB.ID);
-                        if (arNodesA.Count == 0)
+                        if (arComparableItemsA == null)
                         {
-                            recA = recB;
-                            recB = null;
-                        }
-                        else if (arNodesB.Count == 0)
-                        {
-                            recB = null;
+                            arComparableItemsA = oRule.ComparableItems;
                         }
                         else
                         {
-                            if (arComparableItemsA == null)
-                            {
-                                arComparableItemsA = oRule.ComparableItems;
-                            }
-                            else
-                            {
-                                arComparableItemsA = arComparableItemsB;
-                            }
-                            arComparableItemsB = Helper.FromHtmlNodesArrayToComparableItemsList(arNodesB, recB);
-                            Helper.CompareComparableItemsStores(ref arComparableItemsA, ref arComparableItemsB);
-                            Console.WriteLine("comparing rules");
+                            arComparableItemsA = arComparableItemsB;
                         }
+                        ICollection<HtmlNode> arNodesB = Helper.GetAllHtmlClausesInFileLoadedFromWeb("http://www.lawdata.co.il/lawdata_face_lift_test/gethok.asp?flnm=" + recB.HokC + "_" + recB.ID);
+                        arComparableItemsB = Helper.FromHtmlNodesArrayToComparableItemsList(arNodesB, recB);
+                        Helper.CompareComparableItemsStores(ref arComparableItemsA, ref arComparableItemsB);
+                        Console.WriteLine("comparing rules");
                     }
                 }
                 dataReader.Close();
