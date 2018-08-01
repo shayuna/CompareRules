@@ -24,6 +24,8 @@ namespace CompareRules
                 SqlCommand cmd = new SqlCommand(sSql, conn);
                 SqlDataReader dataReader = cmd.ExecuteReader();
                 RecordDetails recA = null, recB = null;
+                IList<IList<ComparableItem>> arAllRulesComparableItems = new List<IList<ComparableItem>>();
+                IList<ComparableItem> arComparableItems = null,arComparableItemsA=null,arComparableItemsB=null;
                 while (dataReader.Read())
                 {
                     if (recA!=null && recA.HokC != Convert.ToInt32(dataReader.GetValue(1)))
@@ -36,6 +38,8 @@ namespace CompareRules
                     if (recA == null)
                     {
                         recA = new RecordDetails(Convert.ToInt32(dataReader.GetValue(0)), Convert.ToInt32(dataReader.GetValue(1)));
+                        if (arComparableItems != null) arAllRulesComparableItems.Add(arComparableItems);
+                        arComparableItems = null;
                     }
                     else if (recB == null)
                     {
@@ -62,8 +66,16 @@ namespace CompareRules
                         }
                         else
                         {
-                            IList<ComparableItem> arComparableItemsA = Helper.FromHtmlNodesArrayToComparableItemsList(arNodesA, recA);
-                            IList<ComparableItem> arComparableItemsB = Helper.FromHtmlNodesArrayToComparableItemsList(arNodesB, recB);
+                            if (arComparableItems == null)
+                            {
+                                arComparableItems = Helper.FromHtmlNodesArrayToComparableItemsList(arNodesA, recA);
+                                arComparableItemsA = arComparableItems;
+                            }
+                            else
+                            {
+                                arComparableItemsA = arComparableItemsB;
+                            }
+                            arComparableItemsB = Helper.FromHtmlNodesArrayToComparableItemsList(arNodesB, recB);
                             Helper.CompareComparableItemsStores(ref arComparableItemsA, ref arComparableItemsB);
                             Console.WriteLine("comparing rules");
                         }
