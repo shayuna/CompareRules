@@ -37,7 +37,7 @@ namespace CompareRules
                 if (oDescendant.AncestorRelationType != RelationType.IDENTICAL)
                 {
                     HtmlNode oNode = oDescendant.Node.Clone();
-                    oNode.InnerHtml = "<span>"+oDescendant.AncestorRelationType + " *** " + oDescendant.HokVersionID + " *** " + "</span>"+oNode.InnerHtml;
+//                    oNode.InnerHtml = "<span>"+oDescendant.AncestorRelationType + " *** " + oDescendant.HokVersionID + " *** " + "</span>"+oNode.InnerHtml;
                     oNode.SetAttributeValue("class", "appended");
                     oNode.SetAttributeValue("data-version", Convert.ToString(oDescendant.HokVersionID));
                     oNode.SetAttributeValue("style", "border:10px solid red");

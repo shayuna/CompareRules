@@ -16,6 +16,7 @@ namespace CompareRules
             string sDataSrc = "192.168.200.4";
             string sConnStr = "Initial Catalog=LawData;User ID=sa;Password=;Data Source=" + sDataSrc;
             string sSql = "select c,hokc from hok_previousversions (nolock) order by hokc,c desc";
+//            string sSql = "select c,hokc from hok_previousversions (nolock) where hokc=28270 order by hokc,c desc";
             int iCounter = 0;
             SqlConnection conn = new SqlConnection(sConnStr);
             try
@@ -73,6 +74,11 @@ namespace CompareRules
                         Helper.CompareComparableItemsStores(ref arComparableItemsA, ref arComparableItemsB);
                         Console.WriteLine("comparing rules");
                     }
+                }
+                if (oRule != null)
+                {
+                    oRule.Serialize();
+                    arRules.Add(oRule);
                 }
                 dataReader.Close();
                 cmd.Dispose();

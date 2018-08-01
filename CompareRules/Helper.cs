@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using System.Text.RegularExpressions;
+using System.Net;
 
 namespace CompareRules
 {
@@ -134,8 +135,10 @@ namespace CompareRules
         }
         public static RelationType CompareTwoHtmlElements(HtmlNode eNodeA,HtmlNode eNodeB)
         {
-            string[] arWordsA = Helper.FromTxtToWords(eNodeA.InnerText);
-            string[] arWordsB = Helper.FromTxtToWords(eNodeB.InnerText);
+            string sTxtA = WebUtility.HtmlDecode(eNodeA.InnerText);
+            string sTxtB = WebUtility.HtmlDecode(eNodeB.InnerText);
+            string[] arWordsA = Helper.FromTxtToWords(sTxtA);
+            string[] arWordsB = Helper.FromTxtToWords(sTxtB);
             RelationType rslt = RelationType.DIFFERENT;
 
             int iWordsFrom2In1 = 0, iWordsFrom1In2 = 0;
@@ -161,7 +164,7 @@ namespace CompareRules
                     }
                 }
             }
-            if (Regex.Replace(eNodeA.InnerText, @"[\s\r\n\t.,;:]+", "") == Regex.Replace(eNodeB.InnerText, @"[\s\r\n\t.,;:]+", "")) rslt = RelationType.IDENTICAL;
+            if (Regex.Replace(sTxtA, @"[\s\r\n\t.,;:]+", "") == Regex.Replace(sTxtB, @"[\s\r\n\t.,;:]+", "")) rslt = RelationType.IDENTICAL;
             else if ((((double)iWordsFrom2In1 / arWordsA.Length >= 0.6) && arWordsA.Length >= 10 && arWordsA.Length * 2.5 > arWordsB.Length) ||
                     (((double)iWordsFrom1In2 / arWordsB.Length >= 0.6) && arWordsB.Length >= 10 && arWordsB.Length * 2.5 > arWordsA.Length) ||
                     (eNodeA.QuerySelector(".hkoteretseifin") != null && eNodeB.QuerySelector(".hkoteretseifin") != null && (double)iWordsFrom1In2 / arWordsB.Length >= 0.5 && (double)iWordsFrom2In1 / arWordsA.Length >= 0.5))
