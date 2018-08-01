@@ -24,8 +24,9 @@ namespace CompareRules
                 SqlCommand cmd = new SqlCommand(sSql, conn);
                 SqlDataReader dataReader = cmd.ExecuteReader();
                 RecordDetails recA = null, recB = null;
-                IList<IList<ComparableItem>> arAllRulesComparableItems = new List<IList<ComparableItem>>();
-                IList<ComparableItem> arComparableItems = null,arComparableItemsA=null,arComparableItemsB=null;
+                IList<Rule> arRules = new List<Rule>();
+                IList<ComparableItem> arComparableItemsA=null,arComparableItemsB=null;
+                Rule oRule = null;
                 while (dataReader.Read())
                 {
                     if (recA!=null && recA.HokC != Convert.ToInt32(dataReader.GetValue(1)))
@@ -38,8 +39,8 @@ namespace CompareRules
                     if (recA == null)
                     {
                         recA = new RecordDetails(Convert.ToInt32(dataReader.GetValue(0)), Convert.ToInt32(dataReader.GetValue(1)));
-                        if (arComparableItems != null) arAllRulesComparableItems.Add(arComparableItems);
-                        arComparableItems = null;
+                        if (oRule != null) arRules.Add(oRule);
+                        oRule = new Rule(recA);
                     }
                     else if (recB == null)
                     {
@@ -66,10 +67,9 @@ namespace CompareRules
                         }
                         else
                         {
-                            if (arComparableItems == null)
+                            if (arComparableItemsA == null)
                             {
-                                arComparableItems = Helper.FromHtmlNodesArrayToComparableItemsList(arNodesA, recA);
-                                arComparableItemsA = arComparableItems;
+                                arComparableItemsA = oRule.ComparableItems;
                             }
                             else
                             {

@@ -9,8 +9,25 @@ namespace CompareRules
 {
     class Rule
     {
-        private int iHokC;
+        private RecordDetails oVersion;
         private HtmlDocument oDoc;
-        IList<ComparableItem> arComparableItems;
+        private ICollection<HtmlNode> arNodes;
+        private IList<ComparableItem> arComparableItems;
+
+        public Rule(RecordDetails oVersion)
+        {
+            this.oVersion = oVersion;
+            oDoc = Helper.GetHtmlDocFromUrl("http://www.lawdata.co.il/lawdata_face_lift_test/gethok.asp?flnm=" + oVersion.HokC + "_" + oVersion.ID);
+            arNodes = Helper.GetAllHtmlClausesInHtmlDocument(oDoc);
+            arComparableItems = Helper.FromHtmlNodesArrayToComparableItemsList(arNodes, oVersion);
+        }
+
+        public IList<ComparableItem> ComparableItems
+        {
+            get
+            {
+                return arComparableItems;
+            }
+        }
     }
 }

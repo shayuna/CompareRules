@@ -17,10 +17,17 @@ namespace CompareRules
     {
         public static ICollection<HtmlNode> GetAllHtmlClausesInFileLoadedFromWeb(string sUrl)
         {
+            return Helper.GetAllHtmlClausesInHtmlDocument(Helper.GetHtmlDocFromUrl(sUrl));
+        }
+        public static ICollection<HtmlNode> GetAllHtmlClausesInHtmlDocument(HtmlDocument oDoc)
+        {
+            return oDoc.QuerySelectorAll(".hsubclausewrapper,.hkoteretseifin,.hearot");
+        }
+        public static HtmlDocument GetHtmlDocFromUrl(string sUrl)
+        {
             HtmlWeb oHtmlWeb = new HtmlWeb();
             oHtmlWeb.OverrideEncoding = Encoding.GetEncoding(1255);
-            HtmlDocument oDoc = oHtmlWeb.Load(sUrl);
-            return oDoc.QuerySelectorAll(".hsubclausewrapper,.hkoteretseifin,.hearot");
+            return oHtmlWeb.Load(sUrl);
         }
         public static IList<ComparableItem> FromHtmlNodesArrayToComparableItemsList(ICollection<HtmlNode> arNodes, RecordDetails rec)
         {
