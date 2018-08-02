@@ -43,13 +43,59 @@ namespace CompareRules
         {
             foreach (ComparableItem oDescendant in Descendants)
             {
-                if (oDescendant.AncestorRelationType != RelationType.IDENTICAL)
+                if (oDescendant.RelationTypeToAncestor != RelationType.IDENTICAL)
                 {
                     HtmlNode oNode = oDescendant.Node.Clone();
-//                    oNode.InnerHtml = "<span>"+oDescendant.AncestorRelationType + " *** " + oDescendant.HokVersionID + " *** " + "</span>"+oNode.InnerHtml;
-                    oNode.SetAttributeValue("class", "appended");
+
+                    string sRelationTypeToAncestor = "";
+                    switch (oDescendant.RelationTypeToAncestor)
+                    {
+                        case RelationType.ABSENT:
+                            sRelationTypeToAncestor = "ABSENT";
+                            break;
+                        case RelationType.SIMILAR:
+                            sRelationTypeToAncestor = "SIMILAR";
+                            break;
+                        case RelationType.DIFFERENT:
+                            sRelationTypeToAncestor = "DIFFERENT";
+                            break;
+                    }
+
+                    oNode.SetAttributeValue("class", "fromPreviousVersions");
                     oNode.SetAttributeValue("data-version", Convert.ToString(oDescendant.HokVersionID));
-                    oNode.SetAttributeValue("style", "border:10px solid red");
+                    if (sRelationTypeToAncestor != "") oNode.SetAttributeValue("data-relationTypeToAncestor", sRelationTypeToAncestor);
+
+                    if (oDescendant.Descendants.Count == 0) SetNodeAsNew(oNode);
+                    /*
+
+                                        // debugging part - start
+                                        //here is the debugging part. for debugging purposes only, i want to mark the different ancestor-descendant relations with different border colors;
+
+                    //                    oNode.InnerHtml = "<span>"+oDescendant.RelationTypeToAncestor + " *** " + oDescendant.HokVersionID + " *** " + "</span>"+oNode.InnerHtml;
+
+                                        string sBorderColor = "",sFontColor="black";
+                                        switch (oDescendant.RelationTypeToAncestor)
+                                        {
+                                            case RelationType.ABSENT:
+                                                sBorderColor = "red";
+                                                break;
+                                            case RelationType.SIMILAR:
+                                                sBorderColor = "green";
+                                                break;
+                                            case RelationType.DIFFERENT:
+                                                sBorderColor = "blue";
+                                                break;
+                                            default:
+                                                sBorderColor = "black";
+                                                break;
+                                        }
+                                        if (sIsNew == "1")
+                                        {
+                                            sFontColor = "orange";
+                                        }
+                                        oNode.SetAttributeValue("style", "border:2px solid " + sBorderColor + ";color:" + sFontColor);
+                                        // debugging part - end
+                      */
                     Item.Node.AppendChild(oNode);
                 }
                 IterateOnItemDescendants(Item, oDescendant.Descendants);
@@ -60,11 +106,33 @@ namespace CompareRules
         {
             foreach (ComparableItem Item in arComparableItems)
             {
-                IterateOnItemDescendants(Item, Item.Descendants);
+                if (Item.Descendants.Count > 0)
+                {
+                    IterateOnItemDescendants(Item, Item.Descendants);
+                }
+                else
+                {
+                    SetNodeAsNew(Item.Node);
+                }
             }
             //            oDoc.Save(@"d:\\inetpub\wwwroot\upload\hok_docsincludingversionsdeltas\"+oVersion.HokC+".htm");
             oDoc.Save(@"c:\\" + oVersion.HokC + ".htm");
             return true;
+        }
+        private bool SetNodeAsNew(HtmlNode oNode)
+        {
+            bool bRslt = true;
+            try
+            {
+                oNode.SetAttributeValue("data-isNew", "1");
+            }
+            catch (Exception ex)
+            {
+                bRslt = false;
+                Console.WriteLine("error in SetNodeAsNew. exception is - " + ex.Message);
+            }
+            return bRslt;
+
         }
     }
 }

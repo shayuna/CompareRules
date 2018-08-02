@@ -66,39 +66,24 @@ namespace CompareRules
                 {
                     if (eRslt==RelationType.DIFFERENT)
                     {
-                        if (
-                            iIncrementA > 100 ||
-                            iIncrementB > 100 ||
-                            iIndexInA + iIncrementA+1>= arComparableItemsA.Count
-                        )
-                        {
-                            arComparableItemsB[iIndexInB].AncestorRelationType = RelationType.COMES_AFTER;
-                            arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB]);
-                        }
+                        arComparableItemsB[iIndexInB].RelationTypeToAncestor = RelationType.DIFFERENT;
+                        arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB]);
                         iIncrementA = 0;
                         iIncrementB = 0;
                     }
                     else if (eTurn == Turn.A)
                     {
-                        arComparableItemsB[iIndexInB + iIncrementB].AncestorRelationType = eRslt;
+                        arComparableItemsB[iIndexInB + iIncrementB].RelationTypeToAncestor = eRslt;
                         for (int ii = 0;ii< iIncrementB; ii++)
                         {
-                            arComparableItemsB[iIndexInB + ii].AncestorRelationType = RelationType.ABSENT;
+                            arComparableItemsB[iIndexInB + ii].RelationTypeToAncestor = RelationType.ABSENT;
                             arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB + ii]);
                         }
                         arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB + iIncrementB]);
                     }
                     else
                     {
-                        arComparableItemsB[iIndexInB].AncestorRelationType = eRslt;
-/* we don't need to relate to to elements in b. if the descendants array is empty, it means that it isn't found in the previous version. plus, another problem: we can't tag one ComparabaleItem object with two AncestorRelationType tags. (here we should use both COME_AFTER and SIMILAR/IDENTICAL*/
-/*
-                        for (int ii = 0; ii < iIncrementA; ii++)
-                        {
-                            arComparableItemsA[iIndexInA + ii].addDescendant(arComparableItemsB[iIndexInB]);
-                        }
-                        arComparableItemsB[iIndexInB].AncestorRelationType = RelationType.COMES_AFTER;
-*/
+                        arComparableItemsB[iIndexInB].RelationTypeToAncestor = eRslt;
                         arComparableItemsA[iIndexInA + iIncrementA].addDescendant(arComparableItemsB[iIndexInB]);
                     }
                     if (iIncrementA == 0 && iIncrementB == 0)

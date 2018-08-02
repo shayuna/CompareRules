@@ -12,10 +12,8 @@ namespace CompareRules
     {
         static void Main(string[] args)
         {
-            //making the db contact. cross your fingers you mf.
             string sDataSrc = "192.168.200.4";
             string sConnStr = "Initial Catalog=LawData;User ID=sa;Password=;Data Source=" + sDataSrc;
-            //            string sSql = "select c,hokc from hok_previousversions (nolock) where hokc=28270 order by hokc,c desc";
             string sSql = "select hp.c,hp.hokc from hok_previousversions hp (nolock) " +
                         "inner join( " +
                         "select top 20 hokc from hok_previousversions hp (nolock) " +
