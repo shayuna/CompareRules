@@ -56,9 +56,6 @@ namespace CompareRules
                         case RelationType.SIMILAR:
                             sRelationTypeToAncestor = "SIMILAR";
                             break;
-                        case RelationType.DIFFERENT:
-                            sRelationTypeToAncestor = "DIFFERENT";
-                            break;
                     }
 
                     oNode.SetAttributeValue("class", "fromPreviousVersions");
@@ -81,9 +78,6 @@ namespace CompareRules
                                                 break;
                                             case RelationType.SIMILAR:
                                                 sBorderColor = "green";
-                                                break;
-                                            case RelationType.DIFFERENT:
-                                                sBorderColor = "blue";
                                                 break;
                                             default:
                                                 sBorderColor = "black";

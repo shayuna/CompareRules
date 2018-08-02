@@ -66,7 +66,7 @@ namespace CompareRules
                 {
                     if (eRslt==RelationType.DIFFERENT)
                     {
-                        arComparableItemsB[iIndexInB].RelationTypeToAncestor = RelationType.DIFFERENT;
+                        arComparableItemsB[iIndexInB].RelationTypeToAncestor = RelationType.ABSENT;
                         arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB]);
                         iIncrementA = 0;
                         iIncrementB = 0;

@@ -21,3 +21,4 @@ C:\Users\shay\Work_Projects\lawdata_exe\CompareRules\CompareRules\obj\Debug\Comp
 C:\Users\shay\Work_Projects\lawdata_exe\CompareRules\CompareRules\obj\Debug\CompareRules.csproj.CopyComplete
 C:\Users\shay\Work_Projects\lawdata_exe\CompareRules\CompareRules\obj\Debug\CompareRules.exe
 C:\Users\shay\Work_Projects\lawdata_exe\CompareRules\CompareRules\obj\Debug\CompareRules.pdb
+C:\Users\shay\Work_Projects\lawdata_exe\CompareRules\CompareRules\obj\Debug\CompareRules.csprojAssemblyReference.cache
