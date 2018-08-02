@@ -30,6 +30,15 @@ namespace CompareRules
             }
         }
 
+        public RecordDetails Version
+        {
+            get
+            {
+                return oVersion;
+            }
+        }
+
+
         private void IterateOnItemDescendants(ComparableItem Item,IList<ComparableItem> Descendants)
         {
             foreach (ComparableItem oDescendant in Descendants)
@@ -53,7 +62,8 @@ namespace CompareRules
             {
                 IterateOnItemDescendants(Item, Item.Descendants);
             }
-            oDoc.Save(@"c:\\testHok_"+oVersion.HokC+".htm");
+            //            oDoc.Save(@"d:\\inetpub\wwwroot\upload\hok_docsincludingversionsdeltas\"+oVersion.HokC+".htm");
+            oDoc.Save(@"c:\\" + oVersion.HokC + ".htm");
             return true;
         }
     }

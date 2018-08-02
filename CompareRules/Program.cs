@@ -15,15 +15,22 @@ namespace CompareRules
             //making the db contact. cross your fingers you mf.
             string sDataSrc = "192.168.200.4";
             string sConnStr = "Initial Catalog=LawData;User ID=sa;Password=;Data Source=" + sDataSrc;
-            string sSql = "select c,hokc from hok_previousversions (nolock) order by hokc,c desc";
-//            string sSql = "select c,hokc from hok_previousversions (nolock) where hokc=28270 order by hokc,c desc";
+            //            string sSql = "select c,hokc from hok_previousversions (nolock) where hokc=28270 order by hokc,c desc";
+            string sSql = "select hp.c,hp.hokc from hok_previousversions hp (nolock) " +
+                        "inner join( " +
+                        "select top 20 hokc from hok_previousversions hp (nolock) " +
+                        "left join Hok_DocsIncludingVersionsDeltas (nolock) hd on hp.hokc= hd.c " +
+                        "where isnull(hd.c,0)= 0 " +
+                        "group by hokc having count(*) > 1 order by hokc" +
+                        ")q1 on hp.hokc = q1.hokc order by hokc,c desc ";
+
             int iCounter = 0;
-            SqlConnection conn = new SqlConnection(sConnStr);
+            SqlConnection connRead = new SqlConnection(sConnStr);
             try
             {
-                conn.Open();
-                SqlCommand cmd = new SqlCommand(sSql, conn);
-                SqlDataReader dataReader = cmd.ExecuteReader();
+                connRead.Open();
+                SqlCommand cmdRead = new SqlCommand(sSql, connRead);
+                SqlDataReader dataReader = cmdRead.ExecuteReader();
                 RecordDetails recA = null, recB = null;
                 IList<Rule> arRules = new List<Rule>();
                 IList<ComparableItem> arComparableItemsA=null,arComparableItemsB=null;
@@ -46,6 +53,7 @@ namespace CompareRules
                         {
                             oRule.Serialize();
                             arRules.Add(oRule);
+                            Helper.WriteToDB(oRule.Version.HokC);
                         }
                         oRule = new Rule(recA);
                     }
@@ -79,16 +87,17 @@ namespace CompareRules
                 {
                     oRule.Serialize();
                     arRules.Add(oRule);
+                    Helper.WriteToDB(oRule.Version.HokC);
                 }
                 dataReader.Close();
-                cmd.Dispose();
-                conn.Close();
+                cmdRead.Dispose();
+                connRead.Close();
             }
             catch (Exception ex)
             {
                 Console.WriteLine("can't open connection to db. error is " + ex.Message); 
             }
-            Console.ReadKey();
+  //          Console.ReadKey();
         }
     }
 }

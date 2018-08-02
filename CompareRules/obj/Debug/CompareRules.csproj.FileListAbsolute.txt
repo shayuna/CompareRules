@@ -17,7 +17,6 @@ C:\Users\shay\Work_Projects\lawdata_exe\CompareRules\CompareRules\bin\Debug\Html
 C:\Users\shay\Work_Projects\lawdata_exe\CompareRules\CompareRules\bin\Debug\HtmlAgilityPack.dll
 C:\Users\shay\Work_Projects\lawdata_exe\CompareRules\CompareRules\bin\Debug\HtmlAgilityPack.xml
 C:\Users\shay\Work_Projects\lawdata_exe\CompareRules\CompareRules\bin\Debug\HtmlAgilityPack.CssSelectors.pdb
-C:\Users\shay\Work_Projects\lawdata_exe\CompareRules\CompareRules\obj\Debug\CompareRules.csprojAssemblyReference.cache
 C:\Users\shay\Work_Projects\lawdata_exe\CompareRules\CompareRules\obj\Debug\CompareRules.csproj.CoreCompileInputs.cache
 C:\Users\shay\Work_Projects\lawdata_exe\CompareRules\CompareRules\obj\Debug\CompareRules.csproj.CopyComplete
 C:\Users\shay\Work_Projects\lawdata_exe\CompareRules\CompareRules\obj\Debug\CompareRules.exe

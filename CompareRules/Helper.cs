@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using System.Text.RegularExpressions;
 using System.Net;
+using System.Data.SqlClient;
 
 namespace CompareRules
 {
@@ -177,6 +178,31 @@ namespace CompareRules
             string sPattern = @"[\-, +[\](){ }.!';:"" ?\s]";
             string[] arTxt = Regex.Split(sTxt, sPattern);
             return arTxt;
+        }
+        public static bool WriteToDB(int C)
+        {
+            bool bRslt = true;
+            try
+            {
+                string sDataSrc = "192.168.200.4";
+                string sConnStr = "Initial Catalog=LawData;User ID=sa;Password=;Data Source=" + sDataSrc;
+                SqlConnection connWrite = new SqlConnection(sConnStr);
+                connWrite.Open();
+                SqlCommand cmdWrite = new SqlCommand();
+                cmdWrite.Connection = connWrite;
+                cmdWrite.CommandType = System.Data.CommandType.Text;
+                cmdWrite.CommandText = "insert into Hok_DocsIncludingVersionsDeltas (c) values (@c)";
+                cmdWrite.Parameters.AddWithValue("@c", C);
+                cmdWrite.ExecuteNonQuery();
+                cmdWrite.Dispose();
+                connWrite.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("oops. something happened when trying to write data to db. hokc=" + C + " exception is - " + ex.Message);
+                bRslt = false;
+            }
+            return bRslt;
         }
 
     }
