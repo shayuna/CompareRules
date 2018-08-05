@@ -45,6 +45,42 @@ namespace CompareRules
             {
                 if (oDescendant.RelationTypeToAncestor != RelationType.IDENTICAL)
                 {
+                    HtmlNode oNodeToClone = oDescendant.Node;
+                    while (oNodeToClone.ParentNode.ChildNodes.Count == 1) oNodeToClone = oNodeToClone.ParentNode;
+                    HtmlNode oNode = oNodeToClone.Clone();
+                    HtmlNode oNodeToWorkOn = oNode.QuerySelector(".hsubclausewrapper,.hkoteretseifin,.hearot");
+                    if (oNodeToWorkOn == null) oNodeToWorkOn = oNode;
+
+                    string sRelationTypeToAncestor = "";
+                    switch (oDescendant.RelationTypeToAncestor)
+                    {
+                        case RelationType.ABSENT:
+                            sRelationTypeToAncestor = "ABSENT";
+                            break;
+                        case RelationType.SIMILAR:
+                            sRelationTypeToAncestor = "SIMILAR";
+                            break;
+                    }
+
+                    oNodeToWorkOn.SetAttributeValue("class", oNodeToWorkOn.GetAttributeValue("class","") + " " + "changedInTime");
+                    oNodeToWorkOn.SetAttributeValue("data-version", Convert.ToString(oDescendant.HokVersionID));
+                    if (sRelationTypeToAncestor != "") oNodeToWorkOn.SetAttributeValue("data-relationTypeToAncestor", sRelationTypeToAncestor);
+
+                    if (oDescendant.Descendants.Count == 0) SetNodeAsNew(oNodeToWorkOn);
+
+                    HtmlNode oNodeToInsertAfter = Item.Node;
+                    while (oNodeToInsertAfter.ParentNode.ChildNodes.Count == 1) oNodeToInsertAfter = oNodeToInsertAfter.ParentNode;
+                    oNodeToInsertAfter.ParentNode.InsertAfter(oNode, oNodeToInsertAfter);
+                }
+                IterateOnItemDescendants(Item, oDescendant.Descendants);
+            }
+        }
+        private void IterateOnItemDescendants_old(ComparableItem Item, IList<ComparableItem> Descendants)
+        {
+            foreach (ComparableItem oDescendant in Descendants)
+            {
+                if (oDescendant.RelationTypeToAncestor != RelationType.IDENTICAL)
+                {
                     HtmlNode oNode = oDescendant.Node.Clone();
 
                     string sRelationTypeToAncestor = "";
@@ -58,7 +94,7 @@ namespace CompareRules
                             break;
                     }
 
-                    oNode.SetAttributeValue("class", "fromPreviousVersions");
+                    oNode.SetAttributeValue("class", "changedInTime");
                     oNode.SetAttributeValue("data-version", Convert.ToString(oDescendant.HokVersionID));
                     if (sRelationTypeToAncestor != "") oNode.SetAttributeValue("data-relationTypeToAncestor", sRelationTypeToAncestor);
 
@@ -91,11 +127,11 @@ namespace CompareRules
                                         // debugging part - end
                       */
                     Item.Node.AppendChild(oNode);
+
                 }
                 IterateOnItemDescendants(Item, oDescendant.Descendants);
             }
         }
-
         public bool Serialize()
         {
             foreach (ComparableItem Item in arComparableItems)
