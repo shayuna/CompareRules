@@ -41,14 +41,15 @@ namespace CompareRules
 
         private void IterateOnItemDescendants(ComparableItem Item,IList<ComparableItem> Descendants)
         {
-            foreach (ComparableItem oDescendant in Descendants)
+            for (int ii= Descendants.Count-1; ii>=0;ii--)
             {
+                ComparableItem oDescendant = Descendants[ii];
                 if (oDescendant.RelationTypeToAncestor != RelationType.IDENTICAL)
                 {
                     HtmlNode oNodeToClone = oDescendant.Node;
                     while (oNodeToClone.ParentNode.ChildNodes.Count == 1) oNodeToClone = oNodeToClone.ParentNode;
                     HtmlNode oNode = oNodeToClone.Clone();
-                    HtmlNode oNodeToWorkOn = oNode.QuerySelector(".hsubclausewrapper,.hkoteretseifin,.hearot");
+                    HtmlNode oNodeToWorkOn = oNode.QuerySelector(".hsubclausewrapper,.hkoteretseif,.hearot");
                     if (oNodeToWorkOn == null) oNodeToWorkOn = oNode;
 
                     string sRelationTypeToAncestor = "";
@@ -66,11 +67,17 @@ namespace CompareRules
                     oNodeToWorkOn.SetAttributeValue("data-version", Convert.ToString(oDescendant.HokVersionID));
                     if (sRelationTypeToAncestor != "") oNodeToWorkOn.SetAttributeValue("data-relationTypeToAncestor", sRelationTypeToAncestor);
 
-                    if (oDescendant.Descendants.Count == 0) SetNodeAsNew(oNodeToWorkOn);
+                    if (oDescendant.IsNew) SetNodeAsNew(oNodeToWorkOn);
 
                     HtmlNode oNodeToInsertAfter = Item.Node;
                     while (oNodeToInsertAfter.ParentNode.ChildNodes.Count == 1) oNodeToInsertAfter = oNodeToInsertAfter.ParentNode;
                     oNodeToInsertAfter.ParentNode.InsertAfter(oNode, oNodeToInsertAfter);
+                }
+                else if (oDescendant.IsNew)
+                {
+                    Item.Node.SetAttributeValue("class", Item.Node.GetAttributeValue("class", "") + " " + "changedInTime");
+                    Item.Node.SetAttributeValue("data-version", Convert.ToString(oDescendant.HokVersionID));
+                    SetNodeAsNew(Item.Node);
                 }
                 IterateOnItemDescendants(Item, oDescendant.Descendants);
             }
@@ -154,7 +161,7 @@ namespace CompareRules
             bool bRslt = true;
             try
             {
-                oNode.SetAttributeValue("data-isNew", "1");
+                oNode.SetAttributeValue("data-isnew", "1");
             }
             catch (Exception ex)
             {

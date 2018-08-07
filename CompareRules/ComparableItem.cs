@@ -16,6 +16,7 @@ namespace CompareRules
         private int iHokVersionID, iPosition;
         private IList<ComparableItem> lDescendants = new List<ComparableItem>();
         RelationType eRelationTypeToAncestor=RelationType.EMPTY;
+        bool bIsNew = false;
         HtmlNode eNode;
         public ComparableItem(int iHokVersionID, int iPosition, HtmlNode eNode)
         {
@@ -65,7 +66,17 @@ namespace CompareRules
                 eRelationTypeToAncestor=value;
             }
         }
-
+        public bool IsNew
+        {
+            get
+            {
+                return bIsNew;
+            }
+            set
+            {
+                bIsNew = value;
+            }
+        }
         public HtmlNode Node
         {
             get

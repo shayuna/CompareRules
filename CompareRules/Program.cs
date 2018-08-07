@@ -14,13 +14,28 @@ namespace CompareRules
         {
             string sDataSrc = "192.168.200.4";
             string sConnStr = "Initial Catalog=LawData;User ID=sa;Password=;Data Source=" + sDataSrc;
-            string sSql = "select hp.c,hp.hokc from hok_previousversions hp (nolock) " +
-                        "inner join( " +
-                        "select top 20 hokc from hok_previousversions hp (nolock) " +
-                        "left join Hok_DocsIncludingVersionsDeltas (nolock) hd on hp.hokc= hd.c " +
-                        "where isnull(hd.c,0)= 0 " +
-                        "group by hokc having count(*) > 1 order by hokc" +
-                        ")q1 on hp.hokc = q1.hokc order by hokc,c desc ";
+            string sSql = "";
+            bool bTest = false;
+            if (bTest)
+            {
+                sSql = "select hp.c,hp.hokc from hok_previousversions hp (nolock) " +
+                            "left join( " +
+                            "select top 20 hokc from hok_previousversions hp (nolock) " +
+                            "left join Hok_DocsIncludingVersionsDeltas (nolock) hd on hp.hokc= hd.c " +
+                            "where isnull(hd.c,0)= 0 " +
+                            "group by hokc having count(*) > 1 order by hokc" +
+                            ")q1 on hp.hokc = q1.hokc where hp.hokc=28292 order by hokc,c desc ";
+            }
+            else
+            {
+                sSql = "select hp.c,hp.hokc from hok_previousversions hp (nolock) " +
+                            "inner join( " +
+                            "select top 20 hokc from hok_previousversions hp (nolock) " +
+                            "left join Hok_DocsIncludingVersionsDeltas (nolock) hd on hp.hokc= hd.c " +
+                            "where isnull(hd.c,0)= 0 " +
+                            "group by hokc having count(*) > 1 order by hokc" +
+                            ")q1 on hp.hokc = q1.hokc order by hokc,c desc ";
+            }
 
             int iCounter = 0;
             SqlConnection connRead = new SqlConnection(sConnStr);
@@ -95,7 +110,7 @@ namespace CompareRules
             {
                 Console.WriteLine("can't open connection to db. error is " + ex.Message); 
             }
-  //          Console.ReadKey();
+//            Console.ReadKey();
         }
     }
 }

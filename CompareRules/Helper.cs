@@ -23,7 +23,7 @@ namespace CompareRules
         }
         public static ICollection<HtmlNode> GetAllHtmlClausesInHtmlDocument(HtmlDocument oDoc)
         {
-            return oDoc.QuerySelectorAll(".hsubclausewrapper,.hkoteretseifin,.hearot");
+            return oDoc.QuerySelectorAll(".hsubclausewrapper,.hkoteretseif,.hearot");
         }
         public static HtmlDocument GetHtmlDocFromUrl(string sUrl)
         {
@@ -60,31 +60,36 @@ namespace CompareRules
                     eRslt == RelationType.SIMILAR || 
                     iIncrementA>100 || 
                     iIncrementB>100 || 
-                    iIndexInA+iIncrementA+1>=arComparableItemsA.Count || 
-                    iIndexInB+iIncrementB+1>=arComparableItemsB.Count
+                    (iIndexInA+iIncrementA+1>=arComparableItemsA.Count && 
+                    iIndexInB+iIncrementB+1>=arComparableItemsB.Count)
                     )
                 {
                     if (eRslt==RelationType.DIFFERENT)
                     {
                         arComparableItemsB[iIndexInB].RelationTypeToAncestor = RelationType.ABSENT;
                         arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB]);
+                        arComparableItemsA[iIndexInA].IsNew = true;
                         iIncrementA = 0;
                         iIncrementB = 0;
                     }
                     else if (eTurn == Turn.A)
                     {
                         arComparableItemsB[iIndexInB + iIncrementB].RelationTypeToAncestor = eRslt;
+                        arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB + iIncrementB]);
                         for (int ii = 0;ii< iIncrementB; ii++)
                         {
                             arComparableItemsB[iIndexInB + ii].RelationTypeToAncestor = RelationType.ABSENT;
                             arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB + ii]);
                         }
-                        arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB + iIncrementB]);
                     }
                     else
                     {
                         arComparableItemsB[iIndexInB].RelationTypeToAncestor = eRslt;
                         arComparableItemsA[iIndexInA + iIncrementA].addDescendant(arComparableItemsB[iIndexInB]);
+                        for (int ii = 0; ii < iIncrementA; ii++)
+                        {
+                            arComparableItemsA[iIndexInA + ii].IsNew = true;
+                        }
                     }
                     if (iIncrementA == 0 && iIncrementB == 0)
                     {
@@ -106,15 +111,27 @@ namespace CompareRules
                 }
                 else
                 {
-                    if (eTurn == Turn.A)
+                    if (eTurn == Turn.A && iIndexInA+iIncrementA+1 < arComparableItemsA.Count)
                     {
                         iIncrementA++;
                         eTurn = Turn.B;
                     }
-                    else
+                    else if (eTurn == Turn.B && iIndexInB + iIncrementB+1 < arComparableItemsB.Count)
                     {
                         iIncrementB++;
                         eTurn = Turn.A;
+                    }
+                    else if (iIndexInA + iIncrementA + 1 < arComparableItemsA.Count)
+                    {
+                        iIncrementA++;
+                    }
+                    else if (iIndexInB + iIncrementB + 1 < arComparableItemsB.Count)
+                    {
+                        iIncrementB++;
+                    }
+                    else
+                    {
+                        bContinue = false;
                     }
                 }
             }
@@ -126,6 +143,10 @@ namespace CompareRules
             string[] arWordsA = Helper.FromTxtToWords(sTxtA);
             string[] arWordsB = Helper.FromTxtToWords(sTxtB);
             RelationType rslt = RelationType.DIFFERENT;
+
+            string sClassA = String.Join(",",eNodeA.GetClassList());
+            string sClassB = String.Join(",", eNodeB.GetClassList());
+
 
             int iWordsFrom2In1 = 0, iWordsFrom1In2 = 0;
             for (int jj = 0; jj < arWordsA.Length; jj++)
@@ -153,15 +174,14 @@ namespace CompareRules
             if (Regex.Replace(sTxtA, @"[\s\r\n\t.,;:]+", "") == Regex.Replace(sTxtB, @"[\s\r\n\t.,;:]+", "")) rslt = RelationType.IDENTICAL;
             else if ((((double)iWordsFrom2In1 / arWordsA.Length >= 0.6) && arWordsA.Length >= 10 && arWordsA.Length * 2.5 > arWordsB.Length) ||
                     (((double)iWordsFrom1In2 / arWordsB.Length >= 0.6) && arWordsB.Length >= 10 && arWordsB.Length * 2.5 > arWordsA.Length) ||
-                    (eNodeA.QuerySelector(".hkoteretseifin") != null && eNodeB.QuerySelector(".hkoteretseifin") != null && (double)iWordsFrom1In2 / arWordsB.Length >= 0.5 && (double)iWordsFrom2In1 / arWordsA.Length >= 0.5))
+                    (((sClassA.Contains("hkoteretseif") && sClassB.Contains("hkoteretseif")) || (sClassA.Contains("hearot") && sClassB.Contains("hearot"))) && (double)iWordsFrom1In2 / arWordsB.Length >= 0.5 && (double)iWordsFrom2In1 / arWordsA.Length >= 0.5))
                 rslt = RelationType.SIMILAR;
-
             return rslt;
         }
         public static string[] FromTxtToWords(string sTxt)
         {
-            string sPattern = @"[\-, +[\](){ }.!';:"" ?\s]";
-            string[] arTxt = Regex.Split(sTxt, sPattern);
+            string sPattern = @"[\-, +[\](){ }.!';:"" ?\s]+";
+            string[] arTxt = Regex.Split(sTxt.Trim(), sPattern);
             return arTxt;
         }
         public static bool WriteToDB(int C)
