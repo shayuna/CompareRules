@@ -209,7 +209,37 @@ namespace CompareRules
             }
             return bRslt;
         }
+        public static bool assignNodeFixedAttributes(HtmlNode oNode, string sHokVersionID,bool bSetNew)
+        {
+            bool bRslt = true;
+            try
+            {
+                oNode.SetAttributeValue("class", oNode.GetAttributeValue("class", "") + " " + "changedInTime");
+                oNode.SetAttributeValue("data-version", sHokVersionID);
+                if (bSetNew) Helper.SetNodeAsNew(oNode);
+            }
+            catch (Exception ex)
+            {
+                bRslt = false;
+                Console.WriteLine("error in assignNodeFixedAttributes. error is - " + ex.Message);
+            }
+            return bRslt;
+        }
+        private static bool SetNodeAsNew(HtmlNode oNode)
+        {
+            bool bRslt = true;
+            try
+            {
+                oNode.SetAttributeValue("data-isnew", "1");
+            }
+            catch (Exception ex)
+            {
+                bRslt = false;
+                Console.WriteLine("error in SetNodeAsNew. exception is - " + ex.Message);
+            }
+            return bRslt;
 
+        }
     }
 }
 

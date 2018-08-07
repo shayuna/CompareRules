@@ -63,11 +63,8 @@ namespace CompareRules
                             break;
                     }
 
-                    oNodeToWorkOn.SetAttributeValue("class", oNodeToWorkOn.GetAttributeValue("class","") + " " + "changedInTime");
-                    oNodeToWorkOn.SetAttributeValue("data-version", Convert.ToString(oDescendant.HokVersionID));
+                    Helper.assignNodeFixedAttributes(oNodeToWorkOn,Convert.ToString(oDescendant.HokVersionID),oDescendant.IsNew);
                     if (sRelationTypeToAncestor != "") oNodeToWorkOn.SetAttributeValue("data-relationTypeToAncestor", sRelationTypeToAncestor);
-
-                    if (oDescendant.IsNew) SetNodeAsNew(oNodeToWorkOn);
 
                     HtmlNode oNodeToInsertAfter = Item.Node;
                     while (oNodeToInsertAfter.ParentNode.ChildNodes.Count == 1) oNodeToInsertAfter = oNodeToInsertAfter.ParentNode;
@@ -75,66 +72,7 @@ namespace CompareRules
                 }
                 else if (oDescendant.IsNew)
                 {
-                    Item.Node.SetAttributeValue("class", Item.Node.GetAttributeValue("class", "") + " " + "changedInTime");
-                    Item.Node.SetAttributeValue("data-version", Convert.ToString(oDescendant.HokVersionID));
-                    SetNodeAsNew(Item.Node);
-                }
-                IterateOnItemDescendants(Item, oDescendant.Descendants);
-            }
-        }
-        private void IterateOnItemDescendants_old(ComparableItem Item, IList<ComparableItem> Descendants)
-        {
-            foreach (ComparableItem oDescendant in Descendants)
-            {
-                if (oDescendant.RelationTypeToAncestor != RelationType.IDENTICAL)
-                {
-                    HtmlNode oNode = oDescendant.Node.Clone();
-
-                    string sRelationTypeToAncestor = "";
-                    switch (oDescendant.RelationTypeToAncestor)
-                    {
-                        case RelationType.ABSENT:
-                            sRelationTypeToAncestor = "ABSENT";
-                            break;
-                        case RelationType.SIMILAR:
-                            sRelationTypeToAncestor = "SIMILAR";
-                            break;
-                    }
-
-                    oNode.SetAttributeValue("class", "changedInTime");
-                    oNode.SetAttributeValue("data-version", Convert.ToString(oDescendant.HokVersionID));
-                    if (sRelationTypeToAncestor != "") oNode.SetAttributeValue("data-relationTypeToAncestor", sRelationTypeToAncestor);
-
-                    if (oDescendant.Descendants.Count == 0) SetNodeAsNew(oNode);
-                    /*
-
-                                        // debugging part - start
-                                        //here is the debugging part. for debugging purposes only, i want to mark the different ancestor-descendant relations with different border colors;
-
-                    //                    oNode.InnerHtml = "<span>"+oDescendant.RelationTypeToAncestor + " *** " + oDescendant.HokVersionID + " *** " + "</span>"+oNode.InnerHtml;
-
-                                        string sBorderColor = "",sFontColor="black";
-                                        switch (oDescendant.RelationTypeToAncestor)
-                                        {
-                                            case RelationType.ABSENT:
-                                                sBorderColor = "red";
-                                                break;
-                                            case RelationType.SIMILAR:
-                                                sBorderColor = "green";
-                                                break;
-                                            default:
-                                                sBorderColor = "black";
-                                                break;
-                                        }
-                                        if (sIsNew == "1")
-                                        {
-                                            sFontColor = "orange";
-                                        }
-                                        oNode.SetAttributeValue("style", "border:2px solid " + sBorderColor + ";color:" + sFontColor);
-                                        // debugging part - end
-                      */
-                    Item.Node.AppendChild(oNode);
-
+                    Helper.assignNodeFixedAttributes(Item.Node, Convert.ToString(oDescendant.HokVersionID),true);
                 }
                 IterateOnItemDescendants(Item, oDescendant.Descendants);
             }
@@ -143,33 +81,18 @@ namespace CompareRules
         {
             foreach (ComparableItem Item in arComparableItems)
             {
-                if (Item.Descendants.Count > 0)
+                if (Item.IsNew)
                 {
-                    IterateOnItemDescendants(Item, Item.Descendants);
+                    Helper.assignNodeFixedAttributes(Item.Node,Convert.ToString(Item.HokVersionID),true);
                 }
                 else
                 {
-                    SetNodeAsNew(Item.Node);
+                    IterateOnItemDescendants(Item, Item.Descendants);
                 }
             }
             //            oDoc.Save(@"d:\\inetpub\wwwroot\upload\hok_docsincludingversionsdeltas\"+oVersion.HokC+".htm");
             oDoc.Save(@"c:\\" + oVersion.HokC + ".htm");
             return true;
-        }
-        private bool SetNodeAsNew(HtmlNode oNode)
-        {
-            bool bRslt = true;
-            try
-            {
-                oNode.SetAttributeValue("data-isnew", "1");
-            }
-            catch (Exception ex)
-            {
-                bRslt = false;
-                Console.WriteLine("error in SetNodeAsNew. exception is - " + ex.Message);
-            }
-            return bRslt;
-
         }
     }
 }
