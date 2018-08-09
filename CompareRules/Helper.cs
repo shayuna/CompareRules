@@ -225,6 +225,15 @@ namespace CompareRules
             }
             return bRslt;
         }
+        public static IList<HtmlNode> getChildElements(HtmlNode elm)
+        {
+            List<HtmlNode> arElm = new List<HtmlNode>();
+            foreach (HtmlNode eChild in elm.ChildNodes)
+            {
+                if (eChild.Name != "#text") arElm.Add(eChild);
+            }
+            return arElm;
+        }
         private static bool SetNodeAsNew(HtmlNode oNode)
         {
             bool bRslt = true;

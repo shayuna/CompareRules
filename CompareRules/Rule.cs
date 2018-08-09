@@ -47,7 +47,7 @@ namespace CompareRules
                 if (oDescendant.RelationTypeToAncestor != RelationType.IDENTICAL)
                 {
                     HtmlNode oNodeToClone = oDescendant.Node;
-                    while (oNodeToClone.ParentNode.ChildNodes.Count == 1) oNodeToClone = oNodeToClone.ParentNode;
+                    while (Helper.getChildElements(oNodeToClone.ParentNode).Count == 1) oNodeToClone = oNodeToClone.ParentNode;
                     HtmlNode oNode = oNodeToClone.Clone();
                     HtmlNode oNodeToWorkOn = oNode.QuerySelector(".hsubclausewrapper,.hkoteretseif,.hearot");
                     if (oNodeToWorkOn == null) oNodeToWorkOn = oNode;
@@ -64,10 +64,10 @@ namespace CompareRules
                     }
 
                     Helper.assignNodeFixedAttributes(oNodeToWorkOn,Convert.ToString(oDescendant.HokVersionID),oDescendant.IsNew);
-                    if (sRelationTypeToAncestor != "") oNodeToWorkOn.SetAttributeValue("data-relationTypeToAncestor", sRelationTypeToAncestor);
+                    if (sRelationTypeToAncestor != "") oNodeToWorkOn.SetAttributeValue("data-relationtypetoancestor", sRelationTypeToAncestor);
 
                     HtmlNode oNodeToInsertAfter = Item.Node;
-                    while (oNodeToInsertAfter.ParentNode.ChildNodes.Count == 1) oNodeToInsertAfter = oNodeToInsertAfter.ParentNode;
+                    while (Helper.getChildElements(oNodeToInsertAfter.ParentNode).Count == 1) oNodeToInsertAfter = oNodeToInsertAfter.ParentNode;
                     oNodeToInsertAfter.ParentNode.InsertAfter(oNode, oNodeToInsertAfter);
                 }
                 else if (oDescendant.IsNew)
@@ -91,7 +91,7 @@ namespace CompareRules
                 }
             }
             //            oDoc.Save(@"d:\\inetpub\wwwroot\upload\hok_docsincludingversionsdeltas\"+oVersion.HokC+".htm");
-            oDoc.Save(@"c:\\" + oVersion.HokC + ".htm");
+            oDoc.Save(@"c:\\allversionsincludedinrule\" + oVersion.HokC + ".htm");
             return true;
         }
     }
