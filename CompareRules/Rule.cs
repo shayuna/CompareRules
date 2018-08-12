@@ -41,7 +41,8 @@ namespace CompareRules
 
         private void IterateOnItemDescendants(ComparableItem Item,IList<ComparableItem> Descendants)
         {
-            for (int ii= Descendants.Count-1; ii>=0;ii--)
+            HtmlNode oLastInsertedNode = Item.Node;
+            for (int ii=0;ii<Descendants.Count;ii++)
             {
                 ComparableItem oDescendant = Descendants[ii];
                 if (oDescendant.RelationTypeToAncestor != RelationType.IDENTICAL)
@@ -51,12 +52,14 @@ namespace CompareRules
                     HtmlNode oNode = oNodeToClone.Clone();
                     HtmlNode oNodeToWorkOn = oNode.QuerySelector(".hsubclausewrapper,.hkoteretseif,.hearot");
                     if (oNodeToWorkOn == null) oNodeToWorkOn = oNode;
+                    HtmlNode oNodeToRelateTo = oLastInsertedNode;
 
                     string sRelationTypeToAncestor = "";
                     switch (oDescendant.RelationTypeToAncestor)
                     {
                         case RelationType.ABSENT:
                             sRelationTypeToAncestor = "ABSENT";
+                            oNodeToRelateTo = Item.Node;
                             break;
                         case RelationType.SIMILAR:
                             sRelationTypeToAncestor = "SIMILAR";
@@ -66,9 +69,16 @@ namespace CompareRules
                     Helper.assignNodeFixedAttributes(oNodeToWorkOn,Convert.ToString(oDescendant.HokVersionID),oDescendant.IsNew);
                     if (sRelationTypeToAncestor != "") oNodeToWorkOn.SetAttributeValue("data-relationtypetoancestor", sRelationTypeToAncestor);
 
-                    HtmlNode oNodeToInsertAfter = Item.Node;
-                    while (Helper.getChildElements(oNodeToInsertAfter.ParentNode).Count == 1) oNodeToInsertAfter = oNodeToInsertAfter.ParentNode;
-                    oNodeToInsertAfter.ParentNode.InsertAfter(oNode, oNodeToInsertAfter);
+                    while (Helper.getChildElements(oNodeToRelateTo.ParentNode).Count == 1) oNodeToRelateTo = oNodeToRelateTo.ParentNode;
+                    if (oDescendant.RelationTypeToAncestor == RelationType.ABSENT)
+                    {
+                        oNodeToRelateTo.ParentNode.InsertBefore(oNode, oNodeToRelateTo);
+                    }
+                    else
+                    {
+                        oNodeToRelateTo.ParentNode.InsertAfter(oNode, oNodeToRelateTo);
+                    }
+                    oLastInsertedNode = oNode;
                 }
                 else if (oDescendant.IsNew)
                 {
