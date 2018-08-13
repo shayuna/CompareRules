@@ -78,7 +78,7 @@ namespace CompareRules
                     {
                         oNodeToRelateTo.ParentNode.InsertAfter(oNode, oNodeToRelateTo);
                     }
-                    oLastInsertedNode = oNode;
+                    oLastInsertedNode = oNodeToWorkOn;
                 }
                 else if (oDescendant.IsNew)
                 {
