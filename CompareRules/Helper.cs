@@ -23,7 +23,17 @@ namespace CompareRules
         }
         public static ICollection<HtmlNode> GetAllHtmlClausesInHtmlDocument(HtmlDocument oDoc)
         {
-            return oDoc.QuerySelectorAll(".hsubclausewrapper,.hkoteretseif,.hearot");
+            ICollection<HtmlNode> arNodesInDoc = oDoc.QuerySelectorAll(".hsubclausewrapper,.hkoteretseif,.hearot");
+            foreach (HtmlNode oNode in arNodesInDoc)
+            {
+                oNode.SetAttributeValue("class", oNode.GetAttributeValue("class", "") + " " + "comparableItm");
+            }
+            ICollection < HtmlNode > arNodesToReturn = oDoc.QuerySelectorAll(".comparableItm");
+            foreach (HtmlNode oNode in arNodesToReturn)
+            {
+                oNode.SetAttributeValue("class", oNode.GetAttributeValue("class", "").Replace(" comparableItm",""));
+            }
+            return arNodesToReturn;
         }
         public static HtmlDocument GetHtmlDocFromUrl(string sUrl)
         {

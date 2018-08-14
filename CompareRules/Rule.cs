@@ -13,6 +13,7 @@ namespace CompareRules
         private HtmlDocument oDoc;
         private ICollection<HtmlNode> arNodes;
         private IList<ComparableItem> arComparableItems;
+        private HtmlNode oNodeInDom;
 
         public Rule(RecordDetails oVersion)
         {
@@ -37,52 +38,50 @@ namespace CompareRules
                 return oVersion;
             }
         }
-
-
-        private void IterateOnItemDescendants(ComparableItem Item,IList<ComparableItem> Descendants)
+        private void IterateOnItemDescendants(ComparableItem Item, IList<ComparableItem> Descendants)
         {
-            HtmlNode oLastInsertedNode = Item.Node;
-            for (int ii=0;ii<Descendants.Count;ii++)
+            bool bIsFirstAbsentInIteration = true;
+            for (int ii = 0; ii < Descendants.Count; ii++)
             {
                 ComparableItem oDescendant = Descendants[ii];
-                if (oDescendant.RelationTypeToAncestor != RelationType.IDENTICAL)
+                HtmlNode oNodeToWorkOn = null;
+                if(oDescendant.RelationTypeToAncestor != RelationType.IDENTICAL)
                 {
                     HtmlNode oNodeToClone = oDescendant.Node;
                     while (Helper.getChildElements(oNodeToClone.ParentNode).Count == 1) oNodeToClone = oNodeToClone.ParentNode;
                     HtmlNode oNode = oNodeToClone.Clone();
-                    HtmlNode oNodeToWorkOn = oNode.QuerySelector(".hsubclausewrapper,.hkoteretseif,.hearot");
+                    oNodeToWorkOn = oNode.QuerySelector(".hsubclausewrapper,.hkoteretseif,.hearot");
                     if (oNodeToWorkOn == null) oNodeToWorkOn = oNode;
-                    HtmlNode oNodeToRelateTo = oLastInsertedNode;
-
                     string sRelationTypeToAncestor = "";
                     switch (oDescendant.RelationTypeToAncestor)
                     {
                         case RelationType.ABSENT:
                             sRelationTypeToAncestor = "ABSENT";
-                            oNodeToRelateTo = Item.Node;
                             break;
                         case RelationType.SIMILAR:
                             sRelationTypeToAncestor = "SIMILAR";
                             break;
                     }
 
-                    Helper.assignNodeFixedAttributes(oNodeToWorkOn,Convert.ToString(oDescendant.HokVersionID),oDescendant.IsNew);
+                    Helper.assignNodeFixedAttributes(oNodeToWorkOn, Convert.ToString(oDescendant.HokVersionID), oDescendant.IsNew);
                     if (sRelationTypeToAncestor != "") oNodeToWorkOn.SetAttributeValue("data-relationtypetoancestor", sRelationTypeToAncestor);
 
-                    while (Helper.getChildElements(oNodeToRelateTo.ParentNode).Count == 1) oNodeToRelateTo = oNodeToRelateTo.ParentNode;
-                    if (oDescendant.RelationTypeToAncestor == RelationType.ABSENT)
+                    while (Helper.getChildElements(oNodeInDom.ParentNode).Count == 1) oNodeInDom = oNodeInDom.ParentNode;
+                    if (bIsFirstAbsentInIteration && oDescendant.RelationTypeToAncestor == RelationType.ABSENT)
                     {
-                        oNodeToRelateTo.ParentNode.InsertBefore(oNode, oNodeToRelateTo);
+                        while (oNodeInDom.QuerySelector(".hsubclausewrapper,.hkoteretseif,.hearot").GetAttributeValue("data-relationtypetoancestor", "") == "SIMILAR") oNodeInDom = oNodeInDom.PreviousSibling;
+                        oNodeInDom.ParentNode.InsertBefore(oNode, oNodeInDom);
+                        bIsFirstAbsentInIteration = false;
                     }
                     else
                     {
-                        oNodeToRelateTo.ParentNode.InsertAfter(oNode, oNodeToRelateTo);
+                        oNodeInDom.ParentNode.InsertAfter(oNode, oNodeInDom);
                     }
-                    oLastInsertedNode = oNodeToWorkOn;
+                    oNodeInDom = oNodeToWorkOn;
                 }
                 else if (oDescendant.IsNew)
                 {
-                    Helper.assignNodeFixedAttributes(Item.Node, Convert.ToString(oDescendant.HokVersionID),true);
+                    Helper.assignNodeFixedAttributes(Item.Node, Convert.ToString(oDescendant.HokVersionID), true);
                 }
                 IterateOnItemDescendants(Item, oDescendant.Descendants);
             }
@@ -97,6 +96,7 @@ namespace CompareRules
                 }
                 else
                 {
+                    oNodeInDom = Item.Node;
                     IterateOnItemDescendants(Item, Item.Descendants);
                 }
             }
