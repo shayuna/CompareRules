@@ -5,13 +5,36 @@ using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using System.Data.SqlClient;
+using System.Threading;
+using System.Runtime.InteropServices;
+
 
 namespace CompareRules
 {
     class Program
     {
+        private static Mutex mutex;
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr GetConsoleWindow();
+
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        private const int SW_HIDE = 0;
+        private const int SW_SHOW = 5;
+        private const int SW_MINIMIZE = 6;
+
         static void Main(string[] args)
         {
+            bool bCreateNew;
+            const string sAppName = "CompareRules";
+            mutex = new Mutex(true, sAppName, out bCreateNew);
+            if (!bCreateNew) Environment.Exit(0);
+
+            var handle = GetConsoleWindow();
+            ShowWindow(handle, SW_MINIMIZE);
+            
             string sDataSrc = "192.168.200.4";
             string sConnStr = "Initial Catalog=LawData;User ID=sa;Password=;Data Source=" + sDataSrc;
             string sSql = "";
@@ -24,13 +47,13 @@ namespace CompareRules
                             "left join Hok_DocsIncludingVersionsDeltas (nolock) hd on hp.hokc= hd.c " +
                             "where isnull(hd.c,0)= 0 " +
                             "group by hokc having count(*) > 1 order by hokc" +
-                            ")q1 on hp.hokc = q1.hokc where hp.hokc=25614 order by hokc,c desc ";
+                            ")q1 on hp.hokc = q1.hokc where hp.hokc=28563 order by hokc,c desc ";
             }
             else
             {
                 sSql = "select hp.c,hp.hokc from hok_previousversions hp (nolock) " +
                             "inner join( " +
-                            "select top 20 hokc from hok_previousversions hp (nolock) " +
+                            "select top 100 hokc from hok_previousversions hp (nolock) " +
                             "left join Hok_DocsIncludingVersionsDeltas (nolock) hd on hp.hokc= hd.c " +
                             "where isnull(hd.c,0)= 0 " +
                             "group by hokc having count(*) > 1 order by hokc" +
@@ -45,7 +68,6 @@ namespace CompareRules
                 SqlCommand cmdRead = new SqlCommand(sSql, connRead);
                 SqlDataReader dataReader = cmdRead.ExecuteReader();
                 RecordDetails recA = null, recB = null;
-                IList<Rule> arRules = new List<Rule>();
                 IList<ComparableItem> arComparableItemsA=null,arComparableItemsB=null;
                 Rule oRule = null;
                 while (dataReader.Read())
@@ -57,17 +79,15 @@ namespace CompareRules
                         recB = null;
                         arComparableItemsA = null;
                         arComparableItemsB = null;
+
+                        oRule.Serialize();
+                        Helper.WriteToDB(oRule.Version.HokC);
+
                         if (iCounter == 100) break;
                     }
                     if (recA == null)
                     {
                         recA = new RecordDetails(Convert.ToInt32(dataReader.GetValue(0)), Convert.ToInt32(dataReader.GetValue(1)));
-                        if (oRule != null)
-                        {
-                            oRule.Serialize();
-                            arRules.Add(oRule);
-                            Helper.WriteToDB(oRule.Version.HokC);
-                        }
                         oRule = new Rule(recA);
                     }
                     else if (recB == null)
@@ -92,14 +112,13 @@ namespace CompareRules
                         }
                         ICollection<HtmlNode> arNodesB = Helper.GetAllHtmlClausesInFileLoadedFromWeb("http://www.lawdata.co.il/lawdata_face_lift_test/gethok.asp?flnm=" + recB.HokC + "_" + recB.ID);
                         arComparableItemsB = Helper.FromHtmlNodesArrayToComparableItemsList(arNodesB, recB);
-                        Helper.CompareComparableItemsStores(ref arComparableItemsA, ref arComparableItemsB);
+                        Helper.CompareComparableItemsStores(arComparableItemsA, arComparableItemsB);
                         Console.WriteLine("comparing rules");
                     }
                 }
                 if (oRule != null)
                 {
                     oRule.Serialize();
-                    arRules.Add(oRule);
                     Helper.WriteToDB(oRule.Version.HokC);
                 }
                 dataReader.Close();

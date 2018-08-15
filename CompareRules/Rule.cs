@@ -13,7 +13,6 @@ namespace CompareRules
         private HtmlDocument oDoc;
         private ICollection<HtmlNode> arNodes;
         private IList<ComparableItem> arComparableItems;
-        private HtmlNode oNodeInDom;
 
         public Rule(RecordDetails oVersion)
         {
@@ -38,14 +37,15 @@ namespace CompareRules
                 return oVersion;
             }
         }
-        private void IterateOnItemDescendants(ComparableItem Item, IList<ComparableItem> Descendants)
+
+        private void IterateOnItemDescendants(ComparableItem Item, IList<ComparableItem> Descendants,HtmlNode oNodeInDom)
         {
             bool bIsFirstAbsentInIteration = true;
             for (int ii = 0; ii < Descendants.Count; ii++)
             {
                 ComparableItem oDescendant = Descendants[ii];
                 HtmlNode oNodeToWorkOn = null;
-                if(oDescendant.RelationTypeToAncestor != RelationType.IDENTICAL)
+                if (oDescendant.RelationTypeToAncestor != RelationType.IDENTICAL)
                 {
                     HtmlNode oNodeToClone = oDescendant.Node;
                     while (Helper.getChildElements(oNodeToClone.ParentNode).Count == 1) oNodeToClone = oNodeToClone.ParentNode;
@@ -69,12 +69,15 @@ namespace CompareRules
                     while (Helper.getChildElements(oNodeInDom.ParentNode).Count == 1) oNodeInDom = oNodeInDom.ParentNode;
                     if (bIsFirstAbsentInIteration && oDescendant.RelationTypeToAncestor == RelationType.ABSENT)
                     {
-                        while (oNodeInDom.QuerySelector(".hsubclausewrapper,.hkoteretseif,.hearot").GetAttributeValue("data-relationtypetoancestor", "") == "SIMILAR") oNodeInDom = oNodeInDom.PreviousSibling;
+                        while (oNodeInDom.QuerySelector(".hsubclausewrapper,.hkoteretseif,.hearot").GetAttributeValue("data-relationtypetoancestor", "") == "SIMILAR") oNodeInDom = oNodeInDom.PreviousSiblingElement();
                         oNodeInDom.ParentNode.InsertBefore(oNode, oNodeInDom);
                         bIsFirstAbsentInIteration = false;
                     }
                     else
                     {
+                        while (oNodeInDom.NextSiblingElement() != null &&
+                            oNodeInDom.NextSiblingElement().QuerySelector(".hsubclausewrapper,.hkoteretseif,.hearot") != null && 
+                            oNodeInDom.NextSiblingElement().QuerySelector(".hsubclausewrapper,.hkoteretseif,.hearot").GetAttributeValue("data-relationtypetoancestor", "") == "SIMILAR") oNodeInDom = oNodeInDom.NextSiblingElement();
                         oNodeInDom.ParentNode.InsertAfter(oNode, oNodeInDom);
                     }
                     oNodeInDom = oNodeToWorkOn;
@@ -83,7 +86,7 @@ namespace CompareRules
                 {
                     Helper.assignNodeFixedAttributes(Item.Node, Convert.ToString(oDescendant.HokVersionID), true);
                 }
-                IterateOnItemDescendants(Item, oDescendant.Descendants);
+                IterateOnItemDescendants(Item, oDescendant.Descendants, oNodeInDom);
             }
         }
         public bool Serialize()
@@ -96,12 +99,11 @@ namespace CompareRules
                 }
                 else
                 {
-                    oNodeInDom = Item.Node;
-                    IterateOnItemDescendants(Item, Item.Descendants);
+                    IterateOnItemDescendants(Item, Item.Descendants,Item.Node);
                 }
             }
-            //            oDoc.Save(@"d:\\inetpub\wwwroot\upload\hok_docsincludingversionsdeltas\"+oVersion.HokC+".htm");
-            oDoc.Save(@"c:\\allversionsincludedinrule\" + oVersion.HokC + ".htm");
+            oDoc.Save(@"d:\\inetpub\wwwroot\upload\hok_docsincludingversionsdeltas\"+oVersion.HokC+".htm");
+//            oDoc.Save(@"c:\\allversionsincludedinrule\" + oVersion.HokC + ".htm");
             return true;
         }
     }

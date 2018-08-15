@@ -53,7 +53,7 @@ namespace CompareRules
             }
             return arComparableItems;
         }
-        public static void CompareComparableItemsStores(ref IList<ComparableItem> arComparableItemsA, ref IList<ComparableItem> arComparableItemsB)
+        public static void CompareComparableItemsStores(IList<ComparableItem> arComparableItemsA, IList<ComparableItem> arComparableItemsB)
         {
             int iIndexInA = 0, iIndexInB = 0, iIncrementA = 0, iIncrementB = 0;
             Turn eTurn=Turn.A;
