@@ -7,7 +7,7 @@ using HtmlAgilityPack;
 using System.Data.SqlClient;
 using System.Threading;
 using System.Runtime.InteropServices;
-
+using System.IO;
 
 namespace CompareRules
 {
@@ -34,11 +34,12 @@ namespace CompareRules
 
             var handle = GetConsoleWindow();
             ShowWindow(handle, SW_MINIMIZE);
-            
+
             string sDataSrc = "192.168.200.4";
             string sConnStr = "Initial Catalog=LawData;User ID=sa;Password=;Data Source=" + sDataSrc;
             string sSql = "";
             bool bTest = false;
+
             if (bTest)
             {
                 sSql = "select hp.c,hp.hokc from hok_previousversions hp (nolock) " +
@@ -110,7 +111,17 @@ namespace CompareRules
                         {
                             arComparableItemsA = arComparableItemsB;
                         }
-                        ICollection<HtmlNode> arNodesB = Helper.GetAllHtmlClausesInFileLoadedFromWeb("http://www.lawdata.co.il/lawdata_face_lift_test/gethok.asp?flnm=" + recB.HokC + "_" + recB.ID);
+                        ICollection<HtmlNode> arNodesB=null;
+                        if (bTest)
+                        {
+                            arNodesB = Helper.GetAllHtmlClausesInHtmlDocument(Helper.GetHtmlDocFromUrl("http://www.lawdata.co.il/lawdata_face_lift_test/gethok.asp?flnm=" + recB.HokC + "_" + recB.ID));
+                        }
+                        else
+                        {
+                            string sPath = "d://inetpub//wwwroot//upload//hok//" + recB.HokC + "_" + recB.ID + ".htm";
+                            if (!File.Exists(sPath)) sPath = "d://inetpub//wwwroot//upload//hok//" + recB.HokC + "_" + recB.ID + ".html";
+                            if (File.Exists(sPath))arNodesB = Helper.GetAllHtmlClausesInHtmlDocument(Helper.GetHtmlDocFromDisk(sPath));
+                        }
                         arComparableItemsB = Helper.FromHtmlNodesArrayToComparableItemsList(arNodesB, recB);
                         Helper.CompareComparableItemsStores(arComparableItemsA, arComparableItemsB);
                         Console.WriteLine("comparing rules");

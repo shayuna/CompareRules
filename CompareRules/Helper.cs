@@ -17,10 +17,6 @@ namespace CompareRules
 
     static class Helper
     {
-        public static ICollection<HtmlNode> GetAllHtmlClausesInFileLoadedFromWeb(string sUrl)
-        {
-            return Helper.GetAllHtmlClausesInHtmlDocument(Helper.GetHtmlDocFromUrl(sUrl));
-        }
         public static ICollection<HtmlNode> GetAllHtmlClausesInHtmlDocument(HtmlDocument oDoc)
         {
             ICollection<HtmlNode> arNodesInDoc = oDoc.QuerySelectorAll(".hsubclausewrapper,.hkoteretseif,.hearot");
@@ -41,15 +37,24 @@ namespace CompareRules
             oHtmlWeb.OverrideEncoding = Encoding.GetEncoding(1255);
             return oHtmlWeb.Load(sUrl);
         }
+        public static HtmlDocument GetHtmlDocFromDisk(string sPath)
+        {
+            HtmlDocument oDoc = new HtmlDocument();
+            oDoc.Load(sPath);
+            return oDoc;
+        }
         public static IList<ComparableItem> FromHtmlNodesArrayToComparableItemsList(ICollection<HtmlNode> arNodes, RecordDetails rec)
         {
 
             IList<ComparableItem> arComparableItems = new List<ComparableItem>();
-            int iPosition = 0;
-            foreach (HtmlNode eNode in arNodes)
+            if (arNodes != null)
             {
-                iPosition++;
-                arComparableItems.Add(new ComparableItem(rec.ID, iPosition, eNode));
+                int iPosition = 0;
+                foreach (HtmlNode eNode in arNodes)
+                {
+                    iPosition++;
+                    arComparableItems.Add(new ComparableItem(rec.ID, iPosition, eNode));
+                }
             }
             return arComparableItems;
         }
