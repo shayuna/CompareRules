@@ -38,7 +38,7 @@ namespace CompareRules
             string sDataSrc = "192.168.200.4";
             string sConnStr = "Initial Catalog=LawData;User ID=sa;Password=;Data Source=" + sDataSrc;
             string sSql = "";
-            bool bTest = true;
+            bool bTest = false;
 
             if (bTest)
             {
