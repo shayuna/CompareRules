@@ -123,7 +123,7 @@ namespace CompareRules
                             if (File.Exists(sPath))arNodesB = Helper.GetAllHtmlClausesInHtmlDocument(Helper.GetHtmlDocFromDisk(sPath));
                         }
                         arComparableItemsB = Helper.FromHtmlNodesArrayToComparableItemsList(arNodesB, recB);
-                        if (arComparableItemsB.Count>0)Helper.CompareComparableItemsStores(arComparableItemsA, arComparableItemsB);
+                        if (arComparableItemsA.Count>0 && arComparableItemsB.Count>0)Helper.CompareComparableItemsStores(arComparableItemsA, arComparableItemsB);
                         Console.WriteLine("comparing rules");
                     }
                 }
