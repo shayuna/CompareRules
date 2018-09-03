@@ -38,7 +38,7 @@ namespace CompareRules
             string sDataSrc = "192.168.200.4";
             string sConnStr = "Initial Catalog=LawData;User ID=sa;Password=;Data Source=" + sDataSrc;
             string sSql = "";
-            bool bTest = false;
+            bool bTest = true;
 
             if (bTest)
             {
@@ -46,9 +46,9 @@ namespace CompareRules
                             "left join( " +
                             "select top 20 hokc from hok_previousversions hp (nolock) " +
                             "left join Hok_DocsIncludingVersionsDeltas (nolock) hd on hp.hokc= hd.c " +
-                            "where isnull(hd.c,0)= 0 " +
+//                            "where isnull(hd.c,0)= 0 " +
                             "group by hokc having count(*) > 1 order by hokc" +
-                            ")q1 on hp.hokc = q1.hokc where hp.hokc=28563 order by hokc,c desc ";
+                            ")q1 on hp.hokc = q1.hokc where hp.hokc=28851 order by hokc,c desc ";
             }
             else
             {

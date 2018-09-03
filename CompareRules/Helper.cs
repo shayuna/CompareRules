@@ -58,6 +58,29 @@ namespace CompareRules
             }
             return arComparableItems;
         }
+        private static double GetAlternativeMatchScore(Turn eTurn, IList<ComparableItem> arComparableItemsA, IList<ComparableItem> arComparableItemsB,int iIndexInA,int iIncrementA,int iIndexInB,int iIncrementB)
+        /* suppose we find a similar element. are we sure this is the right one ? maybe the similarity is a chance similarity and doesn't originate from a common ancestor ?*/
+        /* so here  is the part where we try to match the forced matched element with its best match in its vicinity*/
+        {
+            double dScore = 0;
+            int ii = 0;
+            if (eTurn == Turn.A)
+            {
+                for (ii = 0; ii < iIncrementB+100 && ii+iIndexInA<arComparableItemsA.Count; ii++)
+                {
+                    dScore = Math.Max(dScore, GetMatchScore(arComparableItemsA[ii].Node, arComparableItemsB[iIndexInB + iIncrementB].Node));
+                }
+            }
+            else if (eTurn == Turn.B)
+            {
+                for (ii = 0; ii < iIncrementA + 100 && ii + iIndexInB < arComparableItemsB.Count; ii++)
+                {
+                    dScore = Math.Max(dScore, GetMatchScore(arComparableItemsA[iIndexInA+iIncrementA].Node, arComparableItemsB[ii].Node));
+                }
+            }
+            return dScore;
+        }
+
         public static void CompareComparableItemsStores(IList<ComparableItem> arComparableItemsA, IList<ComparableItem> arComparableItemsB)
         {
             int iIndexInA = 0, iIndexInB = 0, iIncrementA = 0, iIncrementB = 0;
@@ -68,6 +91,7 @@ namespace CompareRules
             while (bContinue && iIndexInA<arComparableItemsA.Count && iIndexInB<arComparableItemsB.Count)
             {
                 RelationType eRslt;
+                double dMatchScore;
                 if (eTurn==Turn.A) eRslt = Helper.CompareTwoHtmlElements(arComparableItemsA[iIndexInA].Node, arComparableItemsB[iIndexInB + iIncrementB].Node);
                 else eRslt = Helper.CompareTwoHtmlElements(arComparableItemsA[iIndexInA + iIncrementA].Node, arComparableItemsB[iIndexInB].Node);
                 if (
@@ -79,6 +103,13 @@ namespace CompareRules
                     iIndexInB+iIncrementB+1>=arComparableItemsB.Count)
                     )
                 {
+                    if (eRslt == RelationType.SIMILAR)
+                    {
+                        if (eTurn == Turn.A) dMatchScore = Helper.GetMatchScore(arComparableItemsA[iIndexInA].Node, arComparableItemsB[iIndexInB + iIncrementB].Node);
+                        else dMatchScore = Helper.GetMatchScore(arComparableItemsA[iIndexInA + iIncrementA].Node, arComparableItemsB[iIndexInB].Node);
+
+                        if (dMatchScore < GetAlternativeMatchScore(eTurn, arComparableItemsA, arComparableItemsB, iIndexInA, iIncrementA, iIndexInB, iIncrementB)) eRslt = RelationType.DIFFERENT;
+                    }
                     if (eRslt==RelationType.DIFFERENT)
                     {
                         arComparableItemsB[iIndexInB].RelationTypeToAncestor = RelationType.ABSENT;
@@ -151,7 +182,57 @@ namespace CompareRules
                 }
             }
         }
-        public static RelationType CompareTwoHtmlElements(HtmlNode eNodeA,HtmlNode eNodeB)
+        public static double GetMatchScore(HtmlNode eNodeA, HtmlNode eNodeB)
+        {
+            string sTxtA = WebUtility.HtmlDecode(eNodeA.InnerText);
+            string sTxtB = WebUtility.HtmlDecode(eNodeB.InnerText);
+            string[] arWordsA = Helper.FromTxtToWords(sTxtA);
+            string[] arWordsB = Helper.FromTxtToWords(sTxtB);
+            double iScore=0;
+
+            string sClassA = String.Join(",", eNodeA.GetClassList());
+            string sClassB = String.Join(",", eNodeB.GetClassList());
+            
+            int iWordsFrom2In1 = 0, iWordsFrom1In2 = 0;
+            for (int jj = 0; jj < arWordsA.Length; jj++)
+            {
+                for (int kk = 0; kk < arWordsB.Length; kk++)
+                {
+                    if (arWordsA[jj] == arWordsB[kk])
+                    {
+                        iWordsFrom2In1++;
+                        break;
+                    }
+                }
+            }
+            for (int jj = 0; jj < arWordsB.Length; jj++)
+            {
+                for (int kk = 0; kk < arWordsA.Length; kk++)
+                {
+                    if (arWordsB[jj] == arWordsA[kk])
+                    {
+                        iWordsFrom1In2++;
+                        break;
+                    }
+                }
+            }
+            if (Regex.Replace(sTxtA, @"[\s\r\n\t.,;:]+", "") == Regex.Replace(sTxtB, @"[\s\r\n\t.,;:]+", "")) iScore = 1;
+            if (((double)iWordsFrom2In1 / arWordsA.Length >= 0.6) && arWordsA.Length >= 10 && arWordsA.Length * 2.5 > arWordsB.Length && iScore < (double)iWordsFrom2In1 / arWordsA.Length) iScore = (double)iWordsFrom2In1 / arWordsA.Length;
+            if (((double)iWordsFrom1In2 / arWordsB.Length >= 0.6) && arWordsB.Length >= 10 && arWordsB.Length * 2.5 > arWordsA.Length && iScore < (double)iWordsFrom1In2 / arWordsB.Length) iScore = (double)iWordsFrom1In2 / arWordsB.Length;
+            if (iScore==0 && (((sClassA.Contains("hkoteretseif") && sClassB.Contains("hkoteretseif")) || (sClassA.Contains("hearot") && sClassB.Contains("hearot"))) && (double)iWordsFrom1In2 / arWordsB.Length >= 0.5 && (double)iWordsFrom2In1 / arWordsA.Length >= 0.5)){
+                iScore = Math.Max((double)iWordsFrom1In2 / arWordsB.Length, (double)iWordsFrom2In1 / arWordsA.Length)+0.1; /*we add 0.1 because we must normalize the value. on account that the scale of what is regarded as RelationType.SIMILAR is different (0.5 on this consition set and 0.6 on the first two conditions) */
+            }
+            return iScore;
+        }
+        public static RelationType CompareTwoHtmlElements(HtmlNode eNodeA, HtmlNode eNodeB)
+        {
+            RelationType relation = RelationType.DIFFERENT;
+            double iScore = GetMatchScore(eNodeA, eNodeB);
+            if (iScore == 1) relation = RelationType.IDENTICAL;
+            else if (iScore >= 0.6) relation = RelationType.SIMILAR;
+            return relation;
+        }
+        public static RelationType CompareTwoHtmlElements_old(HtmlNode eNodeA,HtmlNode eNodeB)
         {
             string sTxtA = WebUtility.HtmlDecode(eNodeA.InnerText);
             string sTxtB = WebUtility.HtmlDecode(eNodeB.InnerText);
