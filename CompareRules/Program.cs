@@ -123,7 +123,7 @@ namespace CompareRules
                             if (File.Exists(sPath))arNodesB = Helper.GetAllHtmlClausesInHtmlDocument(Helper.GetHtmlDocFromDisk(sPath));
                         }
                         arComparableItemsB = Helper.FromHtmlNodesArrayToComparableItemsList(arNodesB, recB);
-                        Helper.CompareComparableItemsStores(arComparableItemsA, arComparableItemsB);
+                        if (arComparableItemsB.Count>0)Helper.CompareComparableItemsStores(arComparableItemsA, arComparableItemsB);
                         Console.WriteLine("comparing rules");
                     }
                 }
@@ -138,7 +138,7 @@ namespace CompareRules
             }
             catch (Exception ex)
             {
-                Console.WriteLine("can't open connection to db. error is " + ex.Message); 
+                Console.WriteLine("there was an error. it could be anywhere. the error message is " + ex.Message); 
             }
 //            Console.ReadKey();
         }

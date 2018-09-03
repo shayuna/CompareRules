@@ -83,103 +83,132 @@ namespace CompareRules
 
         public static void CompareComparableItemsStores(IList<ComparableItem> arComparableItemsA, IList<ComparableItem> arComparableItemsB)
         {
-            int iIndexInA = 0, iIndexInB = 0, iIncrementA = 0, iIncrementB = 0;
-            Turn eTurn=Turn.A;
-
-            bool bContinue = true;
-
-            while (bContinue && iIndexInA<arComparableItemsA.Count && iIndexInB<arComparableItemsB.Count)
+            try
             {
-                RelationType eRslt;
-                double dMatchScore;
-                if (eTurn==Turn.A) eRslt = Helper.CompareTwoHtmlElements(arComparableItemsA[iIndexInA].Node, arComparableItemsB[iIndexInB + iIncrementB].Node);
-                else eRslt = Helper.CompareTwoHtmlElements(arComparableItemsA[iIndexInA + iIncrementA].Node, arComparableItemsB[iIndexInB].Node);
-                if (
-                    eRslt == RelationType.IDENTICAL || 
-                    eRslt == RelationType.SIMILAR || 
-                    iIncrementA>100 || 
-                    iIncrementB>100 || 
-                    (iIndexInA+iIncrementA+1>=arComparableItemsA.Count && 
-                    iIndexInB+iIncrementB+1>=arComparableItemsB.Count)
-                    )
-                {
-                    if (eRslt == RelationType.SIMILAR)
-                    {
-                        if (eTurn == Turn.A) dMatchScore = Helper.GetMatchScore(arComparableItemsA[iIndexInA].Node, arComparableItemsB[iIndexInB + iIncrementB].Node);
-                        else dMatchScore = Helper.GetMatchScore(arComparableItemsA[iIndexInA + iIncrementA].Node, arComparableItemsB[iIndexInB].Node);
+                int iIndexInA = 0, iIndexInB = 0, iIncrementA = 0, iIncrementB = 0;
+                Turn eTurn = Turn.A;
 
-                        if (dMatchScore < GetAlternativeMatchScore(eTurn, arComparableItemsA, arComparableItemsB, iIndexInA, iIncrementA, iIndexInB, iIncrementB)) eRslt = RelationType.DIFFERENT;
-                    }
-                    if (eRslt==RelationType.DIFFERENT)
+                bool bContinue = true;
+                bool bReachedItemsAArrayEnd = false, bReachedItemsBArrayEnd = false;
+
+                while (bContinue /*&& iIndexInA<arComparableItemsA.Count && iIndexInB<arComparableItemsB.Count*/)
+                {
+                    RelationType eRslt;
+                    double dMatchScore;
+                    if (eTurn == Turn.A) eRslt = Helper.CompareTwoHtmlElements(arComparableItemsA[iIndexInA].Node, arComparableItemsB[iIndexInB + iIncrementB].Node);
+                    else eRslt = Helper.CompareTwoHtmlElements(arComparableItemsA[iIndexInA + iIncrementA].Node, arComparableItemsB[iIndexInB].Node);
+                    if (
+                        eRslt == RelationType.IDENTICAL ||
+                        eRslt == RelationType.SIMILAR ||
+                        iIncrementA > 100 ||
+                        iIncrementB > 100 ||
+                        (iIndexInA + iIncrementA + 1 >= arComparableItemsA.Count &&
+                        iIndexInB + iIncrementB + 1 >= arComparableItemsB.Count)
+                        )
                     {
-                        arComparableItemsB[iIndexInB].RelationTypeToAncestor = RelationType.ABSENT;
-                        arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB]);
-                        arComparableItemsA[iIndexInA].IsNew = true;
+                        if (eRslt == RelationType.SIMILAR)
+                        {
+                            if (eTurn == Turn.A) dMatchScore = Helper.GetMatchScore(arComparableItemsA[iIndexInA].Node, arComparableItemsB[iIndexInB + iIncrementB].Node);
+                            else dMatchScore = Helper.GetMatchScore(arComparableItemsA[iIndexInA + iIncrementA].Node, arComparableItemsB[iIndexInB].Node);
+
+                            if (dMatchScore < GetAlternativeMatchScore(eTurn, arComparableItemsA, arComparableItemsB, iIndexInA, iIncrementA, iIndexInB, iIncrementB)) eRslt = RelationType.DIFFERENT;
+                        }
+                        if (eRslt == RelationType.DIFFERENT)
+                        {
+                            if (!bReachedItemsBArrayEnd)/* we already did something with the last item in arComparableItemsB. so we don't want to reproduce the element in this branch */
+                            {
+                                arComparableItemsB[iIndexInB].RelationTypeToAncestor = RelationType.ABSENT;
+                                arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB]);
+                            }
+                            if (!bReachedItemsAArrayEnd)/* we already did something with the last item in arComparableItemsA. so we don't want to reproduce the element in this branch */
+                            {
+                                arComparableItemsA[iIndexInA].IsNew = true;
+                            }
+                            iIncrementA = 0;
+                            iIncrementB = 0;
+                        }
+                        else if (eTurn == Turn.A)
+                        {
+                            arComparableItemsB[iIndexInB + iIncrementB].RelationTypeToAncestor = eRslt;
+                            arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB + iIncrementB]);
+                            for (int ii = 0; ii < iIncrementB; ii++)
+                            {
+                                arComparableItemsB[iIndexInB + ii].RelationTypeToAncestor = RelationType.ABSENT;
+                                arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB + ii]);
+                            }
+                        }
+                        else
+                        {
+                            arComparableItemsB[iIndexInB].RelationTypeToAncestor = eRslt;
+                            arComparableItemsA[iIndexInA + iIncrementA].addDescendant(arComparableItemsB[iIndexInB]);
+                            for (int ii = 0; ii < iIncrementA; ii++)
+                            {
+                                arComparableItemsA[iIndexInA + ii].IsNew = true;
+                            }
+                        }
+                        if (iIncrementA == 0 && iIncrementB == 0)
+                        {
+                            iIndexInA++;
+                            iIndexInB++;
+                        }
+                        else if (eTurn == Turn.A)
+                        {
+                            iIndexInA++;
+                            iIndexInB += iIncrementB + 1;
+                        }
+                        else
+                        {
+                            iIndexInA += iIncrementA + 1;
+                            iIndexInB++;
+                        }
+
+                        if (iIndexInA >= arComparableItemsA.Count && iIndexInB >= arComparableItemsB.Count) bContinue = false;
+                        if (iIndexInA >= arComparableItemsA.Count)
+                        {
+                            bReachedItemsAArrayEnd = true;
+                            iIndexInA = arComparableItemsA.Count - 1;
+                        }
+                        if (iIndexInB >= arComparableItemsB.Count)
+                        {
+                            bReachedItemsBArrayEnd = true;
+                            iIndexInB = arComparableItemsB.Count - 1;
+                        }
+
                         iIncrementA = 0;
                         iIncrementB = 0;
+
                     }
-                    else if (eTurn == Turn.A)
+                    else
                     {
-                        arComparableItemsB[iIndexInB + iIncrementB].RelationTypeToAncestor = eRslt;
-                        arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB + iIncrementB]);
-                        for (int ii = 0;ii< iIncrementB; ii++)
+                        if (eTurn == Turn.A && iIndexInA + iIncrementA + 1 < arComparableItemsA.Count)
                         {
-                            arComparableItemsB[iIndexInB + ii].RelationTypeToAncestor = RelationType.ABSENT;
-                            arComparableItemsA[iIndexInA].addDescendant(arComparableItemsB[iIndexInB + ii]);
+                            iIncrementA++;
+                            eTurn = Turn.B;
+                        }
+                        else if (eTurn == Turn.B && iIndexInB + iIncrementB + 1 < arComparableItemsB.Count)
+                        {
+                            iIncrementB++;
+                            eTurn = Turn.A;
+                        }
+                        else if (iIndexInA + iIncrementA + 1 < arComparableItemsA.Count)
+                        {
+                            iIncrementA++;
+                        }
+                        else if (iIndexInB + iIncrementB + 1 < arComparableItemsB.Count)
+                        {
+                            iIncrementB++;
+                        }
+                        else
+                        {
+                            bContinue = false;
                         }
                     }
-                    else
-                    {
-                        arComparableItemsB[iIndexInB].RelationTypeToAncestor = eRslt;
-                        arComparableItemsA[iIndexInA + iIncrementA].addDescendant(arComparableItemsB[iIndexInB]);
-                        for (int ii = 0; ii < iIncrementA; ii++)
-                        {
-                            arComparableItemsA[iIndexInA + ii].IsNew = true;
-                        }
-                    }
-                    if (iIncrementA == 0 && iIncrementB == 0)
-                    {
-                        iIndexInA++;
-                        iIndexInB++;
-                    }
-                    else if (eTurn == Turn.A)
-                    {
-                        iIndexInA++;
-                        iIndexInB += iIncrementB + 1;
-                    }
-                    else
-                    {
-                        iIndexInA+= iIncrementA + 1;
-                        iIndexInB++;
-                    }
-                    iIncrementA = 0;
-                    iIncrementB = 0;
                 }
-                else
-                {
-                    if (eTurn == Turn.A && iIndexInA+iIncrementA+1 < arComparableItemsA.Count)
-                    {
-                        iIncrementA++;
-                        eTurn = Turn.B;
-                    }
-                    else if (eTurn == Turn.B && iIndexInB + iIncrementB+1 < arComparableItemsB.Count)
-                    {
-                        iIncrementB++;
-                        eTurn = Turn.A;
-                    }
-                    else if (iIndexInA + iIncrementA + 1 < arComparableItemsA.Count)
-                    {
-                        iIncrementA++;
-                    }
-                    else if (iIndexInB + iIncrementB + 1 < arComparableItemsB.Count)
-                    {
-                        iIncrementB++;
-                    }
-                    else
-                    {
-                        bContinue = false;
-                    }
-                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("something in the compare process (in Helper.CompareComparableItemsStores function) went sour. the error message is - " + ex.Message);
             }
         }
         public static double GetMatchScore(HtmlNode eNodeA, HtmlNode eNodeB)
